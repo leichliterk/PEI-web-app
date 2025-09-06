@@ -7,7 +7,10 @@
       "Bash(robocopy:*)",
       "Bash(xcopy:*)",
       "Bash(npm install:*)",
-      "Bash(npx tailwindcss init:*)"
+      "Bash(npx tailwindcss init:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(ng serve:*)"
     ],
     "deny": [],
     "ask": []
