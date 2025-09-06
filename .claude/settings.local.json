@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm start)",
+      "Bash(ng generate:*)",
+      "Bash(move srcappsite srccomponentssite)",
+      "Bash(robocopy:*)",
+      "Bash(xcopy:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
