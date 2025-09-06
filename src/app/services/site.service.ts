@@ -6,8 +6,9 @@ import { environment } from '../../environments/environment';
 export interface Site {
   id: number;
   name: string;
-  location?: string;
-  description?: string;
+  location: string;
+  description: string;
+  uptime: number;
 }
 
 @Injectable({
