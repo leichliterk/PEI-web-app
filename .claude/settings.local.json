@@ -5,7 +5,9 @@
       "Bash(ng generate:*)",
       "Bash(move srcappsite srccomponentssite)",
       "Bash(robocopy:*)",
-      "Bash(xcopy:*)"
+      "Bash(xcopy:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)"
     ],
     "deny": [],
     "ask": []
