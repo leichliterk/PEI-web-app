@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SiteService, Site } from '../../services/site.service';
 import { SiteComponent } from '../site/site.component';
 import { CommonModule } from '@angular/common';
+import { TenantService, Tenant } from '../../services/tenant.service';
 
 @Component({
   selector: 'app-home',
@@ -11,18 +12,22 @@ import { CommonModule } from '@angular/common';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  sites: Site[] = [];
 
-  constructor(private siteService: SiteService) { }
+  loading: boolean = true;
+  tenant: undefined | Tenant;
+  sites: undefined | Array<Site>;
+
+  constructor(private tenantService: TenantService) { }
 
   ngOnInit(): void {
-    this.siteService.getAllSites().subscribe({
-      next: (sites) => {
-        console.log('Sites data:', sites);
-        this.sites = sites;
+    this.tenantService.getTenantById(1001).subscribe({
+      next: (t) => {
+        console.log('Sites data:', t);
+        this.tenant = t;
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching sites:', error);
+        console.error('Error loading tenant:', error);
       }
     });
   }
