@@ -7,6 +7,7 @@ export interface Site {
   site_id: number;
   name: string;
   uptime: number;
+  connection_status: boolean;
 }
 
 @Injectable({
