@@ -9,9 +9,8 @@ export interface Tenant {
   sites: Array<{
     site_id: number,
     name: string,
-    uptime: number
-  }>;
-  meta: {}
+    connection_status: boolean
+  }>
 }
 
 @Injectable({

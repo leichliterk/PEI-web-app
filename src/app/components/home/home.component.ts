@@ -24,6 +24,14 @@ export class HomeComponent implements OnInit {
       next: (t) => {
         console.log('Sites data:', t);
         this.tenant = t;
+        t.sites.forEach((s: any) => {
+          let site = {
+            site_id: s.site_id,
+            name: s.name,
+            connection_status: false,
+          }
+          this.sites?.push(site);
+        });
         this.loading = false;
       },
       error: (error) => {

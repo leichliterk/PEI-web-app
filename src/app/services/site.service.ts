@@ -6,8 +6,14 @@ import { environment } from '../../environments/environment';
 export interface Site {
   site_id: number;
   name: string;
-  uptime: number;
   connection_status: boolean;
+}
+
+export interface ConnectionLog {
+  site_id: number;
+  timestamp: Date;
+  status: string;
+  details: string;
 }
 
 @Injectable({
@@ -24,4 +30,10 @@ export class SiteService {
   getSiteById(site_id: number): Observable<Site> {
     return this.http.get<Site>(`${environment.API_SERVER}/site/getSiteById/${site_id}`);
   }
+
+  getLastConnectionLogs(site_id: number, limit: number = 5): Observable<ConnectionLog[]> {
+    return this.http.get<ConnectionLog[]>(`${environment.API_SERVER}/site/getConnectionLogs/${site_id}?limit=${limit}`);
+  }
+
+
 }
