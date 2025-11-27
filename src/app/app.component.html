@@ -1,11 +1,24 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-800 via-blue-500 to-gray-800 font-sans relative">
   <!-- Subtle texture overlay -->
   <div class="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 pointer-events-none"></div>
-  
-  <header class="bg-white/15 backdrop-blur-md border-b border-white/20 px-8 py-6 shadow-lg flex justify-between items-center">
-    <h1 class="m-0 text-white font-normal text-3xl drop-shadow-md tracking-tight">PEI Data Services</h1>
-  </header>
-  
+
+  <p-toolbar class="app-toolbar">
+    <ng-template pTemplate="start">
+      <h1 class="m-0 text-2xl font-semibold cursor-pointer" (click)="navigateToHome()">PEI Data Services</h1>
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <p-button
+        icon="pi pi-cog"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        (onClick)="navigateToSettings()"
+        aria-label="Settings">
+      </p-button>
+    </ng-template>
+  </p-toolbar>
+
   <main class="px-8 py-12 flex justify-center items-start min-h-[calc(100vh-140px)] relative z-10">
     <router-outlet></router-outlet>
   </main>
