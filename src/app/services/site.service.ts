@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 export interface Site {
   site_id: number;
   name: string;
-  connection_status: boolean;
+  connection_status: 'online' | 'warning' | 'offline';
 }
 
 export interface ConnectionLog {
@@ -31,7 +31,7 @@ export class SiteService {
     return this.http.get<Site>(`${environment.API_SERVER}/site/getSiteById/${site_id}`);
   }
 
-  getLastConnectionLogs(site_id: number, limit: number = 5): Observable<ConnectionLog[]> {
+  getLastConnectionLogs(site_id: number, limit: number): Observable<ConnectionLog[]> {
     return this.http.get<ConnectionLog[]>(`${environment.API_SERVER}/site/getConnectionLogs/${site_id}?limit=${limit}`);
   }
 

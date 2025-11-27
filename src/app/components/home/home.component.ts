@@ -25,10 +25,10 @@ export class HomeComponent implements OnInit {
         console.log('Sites data:', t);
         this.tenant = t;
         t.sites.forEach((s: any) => {
-          let site = {
+          let site: Site = {
             site_id: s.site_id,
             name: s.name,
-            connection_status: false,
+            connection_status: 'offline',
           }
           this.sites?.push(site);
         });
