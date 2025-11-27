@@ -1,1 +1,5 @@
 // Styles converted to Tailwind CSS classes in the template
+
+:host ::ng-deep .p-toolbar {
+  background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+}
