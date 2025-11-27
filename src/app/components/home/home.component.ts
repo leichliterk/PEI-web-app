@@ -1,0 +1,43 @@
+import { Component, OnInit } from '@angular/core';
+import { SiteService, Site } from '../../services/site.service';
+import { SiteComponent } from '../site/site.component';
+import { CommonModule } from '@angular/common';
+import { TenantService, Tenant } from '../../services/tenant.service';
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [CommonModule, SiteComponent],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
+})
+export class HomeComponent implements OnInit {
+
+  loading: boolean = true;
+  tenant: undefined | Tenant;
+  sites: undefined | Array<Site>;
+
+  constructor(private tenantService: TenantService) { }
+
+  ngOnInit(): void {
+    this.tenantService.getTenantById(1001).subscribe({
+      next: (t) => {
+        console.log('Sites data:', t);
+        this.tenant = t;
+        t.sites.forEach((s: any) => {
+          let site = {
+            site_id: s.site_id,
+            name: s.name,
+            connection_status: false,
+          }
+          this.sites?.push(site);
+        });
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading tenant:', error);
+      }
+    });
+  }
+
+}
