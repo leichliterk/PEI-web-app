@@ -1,8 +1,8 @@
 export const environment = {
-    production: false,
-    env_name: "STAGING",
+    production: true,
+    env_name: "PRODUCTION",
     app_version: "0.0.10",
-    API_SERVER: ""
+    API_SERVER: "http://localhost:443/api/data"
 };
 
 
