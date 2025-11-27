@@ -3,10 +3,11 @@ import { SiteService, Site } from '../../services/site.service';
 import { SiteComponent } from '../site/site.component';
 import { CommonModule } from '@angular/common';
 import { TenantService, Tenant } from '../../services/tenant.service';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
     selector: 'app-home',
-    imports: [CommonModule, SiteComponent],
+    imports: [CommonModule, SiteComponent, ProgressSpinnerModule],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })

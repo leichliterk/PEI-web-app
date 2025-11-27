@@ -1,5 +1,15 @@
-<div class="bg-white/10 backdrop-blur-md rounded-lg p-6 shadow-lg border border-white/20 relative">
-  <div class="connection-status" [class.connected]="siteData.connection_status" [class.disconnected]="!siteData.connection_status"></div>
-  <h3 class="text-xl font-semibold text-white mb-2">{{ siteData.name }}</h3>
-  <h4 class="text-l font-semibold text-white mb-2">{{ siteData.site_id }}</h4>
-</div>
+<p-card class="site-card">
+  <ng-template pTemplate="header">
+    <div class="flex justify-between items-center p-4">
+      <h3 class="text-xl font-semibold m-0">{{ siteData.name }}</h3>
+      <p-badge
+        [severity]="siteData.connection_status ? 'success' : 'danger'"
+        [value]="siteData.connection_status ? 'Online' : 'Offline'">
+      </p-badge>
+    </div>
+  </ng-template>
+
+  <div class="text-muted-color">
+    <p class="m-0"><strong>Site ID:</strong> {{ siteData.site_id }}</p>
+  </div>
+</p-card>

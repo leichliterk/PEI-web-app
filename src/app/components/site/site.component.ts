@@ -1,9 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { Site, SiteService, ConnectionLog } from '../../services/site.service';
+import { CardModule } from 'primeng/card';
+import { BadgeModule } from 'primeng/badge';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-site',
-    imports: [],
+    imports: [CardModule, BadgeModule, CommonModule],
     templateUrl: './site.component.html',
     styleUrl: './site.component.scss'
 })
