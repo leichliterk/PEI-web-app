@@ -9,7 +9,7 @@ export interface Tenant {
   sites: Array<{
     site_id: number,
     name: string,
-    connection_status: boolean
+    connection_status: 'online' | 'warning' | 'offline'
   }>
 }
 
