@@ -23,7 +23,7 @@
             </div>
             <p-badge
               [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
-              [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Warning' : 'Offline')"
+              [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')"
               class="text-lg">
             </p-badge>
           </div>

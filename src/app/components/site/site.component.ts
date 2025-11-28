@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
@@ -20,7 +20,7 @@ interface DailyStats {
   templateUrl: './site.component.html',
   styleUrl: './site.component.scss',
 })
-export class SiteComponent implements OnInit {
+export class SiteComponent implements OnInit, OnDestroy {
   siteId: number | null = null;
   siteData: Site | null = null;
   loading: boolean = true;
@@ -28,6 +28,7 @@ export class SiteComponent implements OnInit {
   logsLoading: boolean = false;
   chartData: any;
   chartOptions: any;
+  private statusCheckInterval: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -47,13 +48,22 @@ export class SiteComponent implements OnInit {
       this.siteId = state.siteData.site_id;
       this.loading = false;
       this.loadConnectionLogs();
+      this.startStatusChecks();
     } else {
       // Fallback: get site ID from route params
       this.route.params.subscribe(params => {
         this.siteId = +params['id'];
         this.loadSiteData();
         this.loadConnectionLogs();
+        this.startStatusChecks();
       });
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clear interval when component is destroyed
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
     }
   }
 
@@ -238,6 +248,68 @@ export class SiteComponent implements OnInit {
         }
       }
     };
+  }
+
+  startStatusChecks(): void {
+    if (!this.siteId || !this.siteData) return;
+
+    // Initial status check
+    this.updateConnectionStatus();
+
+    // Set up periodic check every 15 seconds
+    this.statusCheckInterval = setInterval(() => {
+      this.updateConnectionStatus();
+    }, 15000);
+  }
+
+  updateConnectionStatus(): void {
+    if (!this.siteId || !this.siteData) return;
+
+    this.siteService.getLastConnectionLogs(this.siteId, 50).subscribe({
+      next: (response: any) => {
+        // Extract the logs array from the response object
+        const logs = response.logs;
+
+        // Ensure logs is an array
+        if (!Array.isArray(logs)) {
+          console.warn('Connection logs is not an array:', logs);
+          this.siteData!.connection_status = 'offline';
+          return;
+        }
+
+        // Check current connection status with three states
+        const now = Date.now();
+        const oneMinuteAgo = new Date(now - 1 * 60 * 1000);
+        const twoMinutesAgo = new Date(now - 2 * 60 * 1000);
+
+        // Find the most recent successful connection
+        const lastSuccessfulConnection = logs
+          .filter((log: ConnectionLog) => log.status === 'success')
+          .map((log: ConnectionLog) => new Date(log.timestamp))
+          .sort((a, b) => b.getTime() - a.getTime())[0];
+
+        if (!lastSuccessfulConnection) {
+          // No successful connections found
+          this.siteData!.connection_status = 'offline';
+        } else if (lastSuccessfulConnection >= oneMinuteAgo) {
+          // Successful connection within last minute - online
+          this.siteData!.connection_status = 'online';
+        } else if (lastSuccessfulConnection >= twoMinutesAgo) {
+          // Successful connection between 1-2 minutes - warning
+          this.siteData!.connection_status = 'warning';
+        } else {
+          // No successful connection in last 2 minutes - offline
+          this.siteData!.connection_status = 'offline';
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching connection logs for status update:', error);
+        // Set connection_status to offline on error
+        if (this.siteData) {
+          this.siteData.connection_status = 'offline';
+        }
+      }
+    });
   }
 
   goBack(): void {
