@@ -5,7 +5,7 @@ import { SettingsComponent } from './components/settings/settings.component';
 
 export const routes: Routes = [
   { path: 'home', component: HomeComponent },
-  { path: 'site', component: SiteComponent },
+  { path: 'site/:id', component: SiteComponent },
   { path: 'settings', component: SettingsComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];

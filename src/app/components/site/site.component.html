@@ -1,0 +1,52 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <p-button
+      icon="pi pi-arrow-left"
+      label="Back to Sites"
+      [text]="true"
+      (onClick)="goBack()">
+    </p-button>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center items-center py-12">
+      <p>Loading site details...</p>
+    </div>
+  } @else if (siteData) {
+    <div class="max-w-4xl">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="flex justify-between items-center p-6">
+            <div>
+              <h1 class="text-3xl font-bold m-0">{{ siteData.name }}</h1>
+              <p class="text-muted-color mt-2">Site ID: {{ siteData.site_id }}</p>
+            </div>
+            <p-badge
+              [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
+              [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Warning' : 'Offline')"
+              class="text-lg">
+            </p-badge>
+          </div>
+        </ng-template>
+
+        <div class="p-6">
+          <h2 class="text-xl font-semibold mb-4">Site Details</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-muted-color mb-1">Status</p>
+              <p class="font-semibold">{{ siteData.connection_status | titlecase }}</p>
+            </div>
+            <div>
+              <p class="text-muted-color mb-1">Site ID</p>
+              <p class="font-semibold">{{ siteData.site_id }}</p>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <p class="text-muted-color">Additional site information and controls will be added here.</p>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  }
+</div>

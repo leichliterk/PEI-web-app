@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Site, SiteService, ConnectionLog } from '../../services/site.service';
 import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
@@ -14,7 +15,7 @@ export class SiteCardComponent implements OnInit, OnDestroy {
   @Input() siteData!: Site;
   private statusCheckInterval: any;
 
-  constructor(private siteService: SiteService) {}
+  constructor(private siteService: SiteService, private router: Router) {}
 
   ngOnInit() {
     // Initial check
@@ -31,6 +32,10 @@ export class SiteCardComponent implements OnInit, OnDestroy {
     if (this.statusCheckInterval) {
       clearInterval(this.statusCheckInterval);
     }
+  }
+
+  navigateToSite(): void {
+    this.router.navigate(['/site', this.siteData.site_id]);
   }
 
   updateConnectionStatus(site_id: number): void {
