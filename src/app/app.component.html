@@ -8,7 +8,7 @@
     </ng-template>
 
     <ng-template pTemplate="end">
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center">
         <p-button
           icon="pi pi-home"
           [text]="true"
@@ -25,6 +25,15 @@
           (onClick)="navigateToSettings()"
           aria-label="Settings">
         </p-button>
+        @if (userInitials) {
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 text-white font-semibold text-sm cursor-pointer transition-colors duration-200 select-none hover:bg-white/30"
+            (click)="toggleProfileMenu($event)"
+            aria-label="Profile Menu">
+            {{ userInitials }}
+          </div>
+          <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
+        }
       </div>
     </ng-template>
   </p-toolbar>
