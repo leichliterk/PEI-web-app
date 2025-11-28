@@ -13,7 +13,7 @@
       <p>Loading site details...</p>
     </div>
   } @else if (siteData) {
-    <div class="max-w-4xl">
+    <div class="w-full min-w-[50vw]">
       <p-card>
         <ng-template pTemplate="header">
           <div class="flex justify-between items-center p-6">
@@ -30,7 +30,7 @@
         </ng-template>
 
         <div class="p-6">
-          <h2 class="text-xl font-semibold mb-4">Site Details</h2>
+          <!-- <h2 class="text-xl font-semibold mb-4">Site Details</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p class="text-muted-color mb-1">Status</p>
@@ -40,10 +40,38 @@
               <p class="text-muted-color mb-1">Site ID</p>
               <p class="font-semibold">{{ siteData.site_id }}</p>
             </div>
-          </div>
+          </div> -->
 
           <div class="mt-8">
-            <p class="text-muted-color">Additional site information and controls will be added here.</p>
+            <h2 class="text-xl font-semibold mb-4">Connection Logs (Last 30 Days)</h2>
+            @if (logsLoading) {
+              <p class="text-muted-color">Loading connection logs...</p>
+            } @else if (chartData) {
+              <div class="chart-container" style="height: 400px;">
+                <p-chart type="bar" [data]="chartData" [options]="chartOptions"></p-chart>
+              </div>
+              <div class="mt-4 flex gap-6 justify-center text-sm">
+                <div class="flex items-center gap-2">
+                  <div class="w-4 h-4 bg-red-500 rounded"></div>
+                  <span>Failures</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-4 h-4 bg-green-500 rounded"></div>
+                  <span>Successes</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-4 h-4 bg-gray-400 rounded"></div>
+                  <span>No Data</span>
+                </div>
+              </div>
+              <p class="text-muted-color text-sm mt-4 text-center">
+                Showing {{ connectionLogs.length }} log entries from the last 30 days
+                <br>
+                Expected: 5,760 logs per day (one every 15 seconds)
+              </p>
+            } @else {
+              <p class="text-muted-color">No connection logs available for the last 30 days.</p>
+            }
           </div>
         </div>
       </p-card>

@@ -35,7 +35,9 @@ export class SiteCardComponent implements OnInit, OnDestroy {
   }
 
   navigateToSite(): void {
-    this.router.navigate(['/site', this.siteData.site_id]);
+    this.router.navigate(['/site', this.siteData.site_id], {
+      state: { siteData: this.siteData }
+    });
   }
 
   updateConnectionStatus(site_id: number): void {
