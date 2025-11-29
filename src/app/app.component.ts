@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Menu, MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { UserService } from './services/user.service';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
     selector: 'app-root',
@@ -17,12 +18,32 @@ export class AppComponent implements OnInit {
   title = 'PEI-web-app';
   userInitials: string = '';
   profileMenuItems: MenuItem[] = [];
+  isAuthenticated$;
+  user$;
 
   @ViewChild('profileMenu') profileMenu!: Menu;
 
-  constructor(private router: Router, private userService: UserService) {}
+  constructor(
+    private router: Router,
+    private userService: UserService,
+    public authService: AuthService
+  ) {
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
+    this.user$ = this.authService.user$;
+  }
 
   ngOnInit(): void {
+    // Subscribe to Auth0 user and update UserService
+    this.user$.subscribe(auth0User => {
+      if (auth0User) {
+        this.userService.setUser({
+          firstName: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
+          lastName: auth0User.family_name || auth0User.name?.split(' ')[1] || '',
+          email: auth0User.email || ''
+        });
+      }
+    });
+
     this.userService.currentUser.subscribe(user => {
       this.userInitials = this.userService.getInitials();
     });
@@ -48,14 +69,22 @@ export class AppComponent implements OnInit {
     this.profileMenu.toggle(event);
   }
 
+  login() {
+    this.authService.loginWithRedirect();
+  }
+
   navigateToAccount() {
     console.log('Navigate to account');
     // TODO: Implement account navigation
   }
 
   logout() {
-    console.log('Logging out');
-    // TODO: Implement logout functionality
+    this.userService.clearUser();
+    this.authService.logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    });
   }
 
   navigateToSettings() {

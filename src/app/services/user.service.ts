@@ -15,14 +15,7 @@ export class UserService {
   public currentUser: Observable<User | null>;
 
   constructor() {
-    // For now, using mock data. Replace with actual authentication service later
-    const mockUser: User = {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com'
-    };
-
-    this.currentUserSubject = new BehaviorSubject<User | null>(mockUser);
+    this.currentUserSubject = new BehaviorSubject<User | null>(null);
     this.currentUser = this.currentUserSubject.asObservable();
   }
 

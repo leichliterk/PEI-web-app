@@ -9,30 +9,40 @@
 
     <ng-template pTemplate="end">
       <div class="flex gap-2 items-center">
-        <p-button
-          icon="pi pi-home"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          (onClick)="navigateToHome()"
-          aria-label="Home">
-        </p-button>
-        <p-button
-          icon="pi pi-cog"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          (onClick)="navigateToSettings()"
-          aria-label="Settings">
-        </p-button>
-        @if (userInitials) {
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 text-white font-semibold text-sm cursor-pointer transition-colors duration-200 select-none hover:bg-white/30"
-            (click)="toggleProfileMenu($event)"
-            aria-label="Profile Menu">
-            {{ userInitials }}
-          </div>
-          <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
+        @if (isAuthenticated$ | async) {
+          <p-button
+            icon="pi pi-home"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            (onClick)="navigateToHome()"
+            aria-label="Home">
+          </p-button>
+          <p-button
+            icon="pi pi-cog"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            (onClick)="navigateToSettings()"
+            aria-label="Settings">
+          </p-button>
+          @if (userInitials) {
+            <div
+              class="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 text-white font-semibold text-sm cursor-pointer transition-colors duration-200 select-none hover:bg-white/30"
+              (click)="toggleProfileMenu($event)"
+              aria-label="Profile Menu">
+              {{ userInitials }}
+            </div>
+            <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
+          }
+        } @else {
+          <p-button
+            label="Log In"
+            icon="pi pi-sign-in"
+            (onClick)="login()"
+            severity="secondary"
+            [outlined]="true">
+          </p-button>
         }
       </div>
     </ng-template>
