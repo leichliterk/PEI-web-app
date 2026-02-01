@@ -5,6 +5,9 @@
   <p-toolbar class="bg-primary-500 border-none rounded-none shadow-md">
     <ng-template pTemplate="start">
       <h1 class="m-0 text-2xl font-semibold cursor-pointer" (click)="navigateToHome()">PEI Data Services</h1>
+      @if (!environment.production) {
+        <span class="ml-4 text-red-500 font-bold uppercase">{{ environment.env_name }}</span>
+      }
     </ng-template>
 
     <ng-template pTemplate="end">

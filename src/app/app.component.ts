@@ -9,6 +9,7 @@ import { UserService } from './services/user.service';
 import { WebSocketService } from './services/websocket.service';
 import { TenantService } from './services/tenant.service';
 import { AuthService } from '@auth0/auth0-angular';
+import { environment } from '../environments/environment';
 
 @Component({
     selector: 'app-root',
@@ -22,6 +23,7 @@ export class AppComponent implements OnInit {
   profileMenuItems: MenuItem[] = [];
   isAuthenticated$;
   user$;
+  environment = environment;
 
   @ViewChild('profileMenu') profileMenu!: Menu;
 
