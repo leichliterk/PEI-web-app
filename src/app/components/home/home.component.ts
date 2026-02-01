@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { SiteService, Site } from '../../services/site.service';
+import { Site } from '../../services/site.service';
 import { SiteCardComponent } from '../site-card/site-card.component';
 import { CommonModule } from '@angular/common';
-import { TenantService, Tenant } from '../../services/tenant.service';
+import { TenantService, Tenant, TenantSite } from '../../services/tenant.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
@@ -15,7 +15,7 @@ export class HomeComponent implements OnInit {
 
   loading: boolean = true;
   tenant: undefined | Tenant;
-  sites: undefined | Array<Site>;
+  sites: Site[] = [];
 
   constructor(private tenantService: TenantService) { }
 
@@ -24,20 +24,24 @@ export class HomeComponent implements OnInit {
       next: (t) => {
         console.log('Sites data:', t);
         this.tenant = t;
-        t.sites.forEach((s: any) => {
-          let site: Site = {
-            site_id: s.site_id,
-            name: s.name,
-            connection_status: 'offline',
-          }
-          this.sites?.push(site);
-        });
+        this.sites = t.sites.map((s: TenantSite) => ({
+          site_id: s.site_id,
+          name: s.name,
+          connection_status: this.mapConnectionStatus(s.connection_status),
+        }));
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading tenant:', error);
       }
     });
+  }
+
+  private mapConnectionStatus(status?: boolean): 'online' | 'warning' | 'offline' {
+    if (status === true) {
+      return 'online';
+    }
+    return 'offline';
   }
 
 }

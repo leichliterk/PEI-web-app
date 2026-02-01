@@ -3,14 +3,21 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface TenantSite {
+  site_id: number;
+  name: string;
+  api_key?: string;
+  connection_status?: boolean;
+  last_seen?: string;
+}
+
 export interface Tenant {
+  _id: string;
   tenant_id: number;
   name: string;
-  sites: Array<{
-    site_id: number,
-    name: string,
-    connection_status: 'online' | 'warning' | 'offline'
-  }>
+  sites: TenantSite[];
+  __v?: number;
+  updatedAt?: string;
 }
 
 @Injectable({
