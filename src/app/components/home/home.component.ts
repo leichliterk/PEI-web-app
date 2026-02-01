@@ -36,8 +36,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         }));
         this.loading = false;
 
-        // Connect to WebSocket for real-time updates
-        this.webSocketService.connect(t.tenant_id);
+        // Subscribe to WebSocket updates (connection managed by app.component)
         this.wsSubscription = this.webSocketService.siteStatus$.subscribe(update => {
           this.sites = this.sites.map(site =>
             site.site_id === update.site_id
@@ -54,7 +53,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
-    this.webSocketService.disconnect();
   }
 
   private mapConnectionStatus(status?: boolean): 'online' | 'warning' | 'offline' {
