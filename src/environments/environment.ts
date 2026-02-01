@@ -7,6 +7,7 @@ export const environment = {
     env_name: "DEVELOPMENT",
     app_version: "0.0.10",
     API_SERVER: "http://localhost:443/api/data",
+    WS_SERVER: "http://localhost:443",
     AUTH_DOMAIN: "sv-pei.us.auth0.com",
     AUTH_CLIENT_ID: "AbStwokiYZyLt65e45APDN6oGV92kj7K",
     AUTH_REDIRECT_URI: window.location.origin,

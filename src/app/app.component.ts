@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { Menu, MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { UserService } from './services/user.service';
+import { WebSocketService } from './services/websocket.service';
+import { TenantService } from './services/tenant.service';
 import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
@@ -26,6 +28,8 @@ export class AppComponent implements OnInit {
   constructor(
     private router: Router,
     private userService: UserService,
+    private webSocketService: WebSocketService,
+    private tenantService: TenantService,
     public authService: AuthService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
@@ -40,6 +44,13 @@ export class AppComponent implements OnInit {
           firstName: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
           lastName: auth0User.family_name || auth0User.name?.split(' ')[1] || '',
           email: auth0User.email || ''
+        });
+
+        // Connect to WebSocket when authenticated
+        this.tenantService.getTenantById(1001).subscribe({
+          next: (tenant) => {
+            this.webSocketService.connect(tenant.tenant_id);
+          }
         });
       }
     });
@@ -79,6 +90,7 @@ export class AppComponent implements OnInit {
   }
 
   logout() {
+    this.webSocketService.disconnect();
     this.userService.clearUser();
     this.authService.logout({
       logoutParams: {

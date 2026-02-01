@@ -11,7 +11,7 @@
     </div>
   } @else {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      @for (site of tenant!.sites; track $index) {
+      @for (site of sites; track site.site_id) {
         <app-site-card [siteData]="site"></app-site-card>
       }
     </div>

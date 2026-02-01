@@ -9,13 +9,6 @@ export interface Site {
   connection_status: 'online' | 'warning' | 'offline';
 }
 
-export interface ConnectionLog {
-  site_id: number;
-  timestamp: Date;
-  status: string;
-  details: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -30,10 +23,4 @@ export class SiteService {
   getSiteById(site_id: number): Observable<Site> {
     return this.http.get<Site>(`${environment.API_SERVER}/site/getSiteById/${site_id}`);
   }
-
-  getLastConnectionLogs(site_id: number, limit: number): Observable<ConnectionLog[]> {
-    return this.http.get<ConnectionLog[]>(`${environment.API_SERVER}/site/getConnectionLogs/${site_id}?limit=${limit}`);
-  }
-
-
 }
