@@ -28,20 +28,37 @@
             </p-badge>
           </div>
         </ng-template>
+      </p-card>
 
-        <div class="p-6">
-          <h2 class="text-xl font-semibold mb-4">Site Details</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p class="text-muted-color mb-1">Status</p>
-              <p class="font-semibold">{{ siteData.connection_status | titlecase }}</p>
-            </div>
-            <div>
-              <p class="text-muted-color mb-1">Site ID</p>
-              <p class="font-semibold">{{ siteData.site_id }}</p>
-            </div>
+      <p-card class="mt-4">
+        <ng-template pTemplate="header">
+          <div class="p-4 pb-0">
+            <h2 class="text-xl font-semibold m-0">Current Session</h2>
           </div>
+        </ng-template>
+        <div class="flex justify-between items-center py-2">
+          <span class="text-muted-color">Connected At</span>
+          <span class="font-semibold">{{ connectedAt ? (connectedAt | date:'medium') : '--' }}</span>
         </div>
+        <div class="flex justify-between items-center py-2">
+          <span class="text-muted-color">Current Uptime</span>
+          <span class="font-semibold">{{ uptime }}</span>
+        </div>
+      </p-card>
+
+      <p-card class="mt-4">
+        <ng-template pTemplate="header">
+          <div class="p-4 pb-0">
+            <h2 class="text-xl font-semibold m-0">Connection History (30 Days)</h2>
+          </div>
+        </ng-template>
+        @if (chartData) {
+          <p-chart type="bar" [data]="chartData" [options]="chartOptions" [style]="{'height': '500px'}"></p-chart>
+        } @else {
+          <div class="flex justify-center items-center" style="height: 500px;">
+            <p class="text-muted-color">Loading chart data...</p>
+          </div>
+        }
       </p-card>
     </div>
   }
