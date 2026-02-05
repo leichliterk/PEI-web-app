@@ -45,6 +45,21 @@
           <span class="font-semibold">{{ uptime }}</span>
         </div>
       </p-card>
+
+      <p-card class="mt-4">
+        <ng-template pTemplate="header">
+          <div class="p-4 pb-0">
+            <h2 class="text-xl font-semibold m-0">Connection History (30 Days)</h2>
+          </div>
+        </ng-template>
+        @if (chartData) {
+          <p-chart type="bar" [data]="chartData" [options]="chartOptions" [style]="{'height': '500px'}"></p-chart>
+        } @else {
+          <div class="flex justify-center items-center" style="height: 500px;">
+            <p class="text-muted-color">Loading chart data...</p>
+          </div>
+        }
+      </p-card>
     </div>
   }
 </div>

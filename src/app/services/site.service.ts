@@ -11,9 +11,9 @@ export interface Site {
 
 export interface UptimeSession {
   connected_at: string;
-  disconnected_at: string;
-  duration_ms: number;
-  disconnect_reason: string;
+  disconnected_at: string | null;
+  duration_ms: number | null;
+  disconnect_reason: string | null;
 }
 
 export interface SiteUptime {
