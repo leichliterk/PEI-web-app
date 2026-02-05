@@ -9,6 +9,25 @@ export interface Site {
   connection_status: 'online' | 'warning' | 'offline';
 }
 
+export interface UptimeSession {
+  connected_at: string;
+  disconnected_at: string;
+  duration_ms: number;
+  disconnect_reason: string;
+}
+
+export interface SiteUptime {
+  tenant_id: number;
+  site_id: number;
+  days: number;
+  start_date: string;
+  end_date: string;
+  total_time_ms: number;
+  total_uptime_ms: number;
+  uptime_percentage: number;
+  sessions: UptimeSession[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -22,5 +41,9 @@ export class SiteService {
 
   getSiteById(site_id: number): Observable<Site> {
     return this.http.get<Site>(`${environment.API_SERVER}/site/getSiteById/${site_id}`);
+  }
+
+  getSiteUptime(tenant_id: number, site_id: number, days: number = 7): Observable<SiteUptime> {
+    return this.http.get<SiteUptime>(`${environment.API_SERVER}/site/uptime/${tenant_id}/${site_id}?days=${days}`);
   }
 }
