@@ -14,6 +14,7 @@ export interface UptimeSession {
   disconnected_at: string | null;
   duration_ms: number | null;
   disconnect_reason: string | null;
+  connection_source: 'app' | 'service' | 'unknown';
 }
 
 export interface SiteUptime {

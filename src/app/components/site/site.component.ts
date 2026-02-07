@@ -20,6 +20,7 @@ export class SiteComponent implements OnInit, OnDestroy {
   siteData: Site | null = null;
   loading: boolean = true;
   connectedAt: Date | null = null;
+  connectionSource: string | null = null;
   uptime: string = '--';
   uptimeData: SiteUptime | null = null;
   chartData: any;
@@ -320,22 +321,25 @@ export class SiteComponent implements OnInit, OnDestroy {
 
     if (!this.uptimeData?.sessions?.length) {
       this.connectedAt = null;
+      this.connectionSource = null;
       this.uptime = '--';
       return;
     }
 
-    // Get the most recent session (last in array)
-    const currentSession = this.uptimeData.sessions[this.uptimeData.sessions.length - 1];
-    this.connectedAt = new Date(currentSession.connected_at);
+    // Find the active session (disconnected_at is null)
+    const activeSession = this.uptimeData.sessions.find(s => s.disconnected_at === null);
 
-    // Check if this is an active session (disconnected_at is null)
-    if (currentSession.disconnected_at === null) {
-      // Active session - calculate live uptime
+    if (activeSession) {
+      this.connectedAt = new Date(activeSession.connected_at);
+      this.connectionSource = activeSession.connection_source;
       this.updateUptime();
       this.uptimeInterval = interval(1000).subscribe(() => this.updateUptime());
     } else {
-      // Completed session - show the duration
-      this.uptime = currentSession.duration_ms !== null ? this.formatDuration(currentSession.duration_ms) : '--';
+      // No active session
+      const lastSession = this.uptimeData.sessions[this.uptimeData.sessions.length - 1];
+      this.connectedAt = new Date(lastSession.connected_at);
+      this.connectionSource = 'offline';
+      this.uptime = lastSession.duration_ms !== null ? this.formatDuration(lastSession.duration_ms) : '--';
     }
   }
 
