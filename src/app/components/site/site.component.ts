@@ -6,7 +6,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { ChartModule } from 'primeng/chart';
-import { Site, SiteService, SiteUptime, UptimeSession } from '../../services/site.service';
+import { Site, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
 import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
@@ -25,6 +25,9 @@ export class SiteComponent implements OnInit, OnDestroy {
   uptimeData: SiteUptime | null = null;
   chartData: any;
   chartOptions: any;
+  accountingLogs: SiteFile[] = [];
+  flareData: SiteFile[] = [];
+  crFiles: SiteFile[] = [];
   private wsSubscription?: Subscription;
   private uptimeInterval?: Subscription;
 
@@ -46,6 +49,7 @@ export class SiteComponent implements OnInit, OnDestroy {
       this.loading = false;
       this.subscribeToStatusUpdates();
       this.loadUptimeData();
+      this.loadSiteFiles();
     } else {
       // Fallback: get site ID from route params
       this.route.params.subscribe(params => {
@@ -53,6 +57,7 @@ export class SiteComponent implements OnInit, OnDestroy {
         this.loadSiteData();
         this.subscribeToStatusUpdates();
         this.loadUptimeData();
+        this.loadSiteFiles();
       });
     }
   }
@@ -111,6 +116,40 @@ export class SiteComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Failed to load uptime data:', error);
+      }
+    });
+  }
+
+  private loadSiteFiles(): void {
+    if (!this.siteId) return;
+
+    const tenantId = 1001;
+
+    this.siteService.getSiteFiles(tenantId, this.siteId).subscribe({
+      next: (files) => {
+        const sorted = files.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        this.accountingLogs = sorted.filter(f => f.category === 'accounting_log').slice(0, 5);
+        this.flareData = sorted.filter(f => f.category === 'flare_data').slice(0, 5);
+        this.crFiles = sorted.filter(f => f.category === 'cr_files').slice(0, 5);
+      },
+      error: (error) => {
+        console.error('Failed to load site files:', error);
+      }
+    });
+  }
+
+  downloadFile(file: SiteFile): void {
+    this.siteService.downloadFile(file._id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Failed to download file:', error);
       }
     });
   }
