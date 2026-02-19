@@ -62,10 +62,10 @@ export class SiteService {
   }
 
   getSiteFiles(tenant_id: number, site_id: number): Observable<SiteFile[]> {
-    return this.http.get<SiteFile[]>(`${environment.API_SERVER}/api/data/files/${tenant_id}/${site_id}`);
+    return this.http.get<SiteFile[]>(`${environment.API_SERVER}/files/${tenant_id}/${site_id}`);
   }
 
   downloadFile(file_id: string): Observable<Blob> {
-    return this.http.get(`${environment.API_SERVER}/api/data/files/download/${file_id}`, { responseType: 'blob' });
+    return this.http.get(`${environment.API_SERVER}/files/download/${file_id}`, { responseType: 'blob' });
   }
 }
