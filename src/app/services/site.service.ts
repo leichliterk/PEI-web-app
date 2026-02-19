@@ -29,6 +29,19 @@ export interface SiteUptime {
   sessions: UptimeSession[];
 }
 
+export interface SiteFile {
+  _id: string;
+  tenant_id: number;
+  site_id: number;
+  filename: string;
+  size: number;
+  source: string;
+  sha256: string;
+  category: 'accounting_log' | 'flare_data' | 'cr_files';
+  timestamp: string;
+  createdAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,5 +59,13 @@ export class SiteService {
 
   getSiteUptime(tenant_id: number, site_id: number, days: number = 7): Observable<SiteUptime> {
     return this.http.get<SiteUptime>(`${environment.API_SERVER}/site/uptime/${tenant_id}/${site_id}?days=${days}`);
+  }
+
+  getSiteFiles(tenant_id: number, site_id: number): Observable<SiteFile[]> {
+    return this.http.get<SiteFile[]>(`${environment.API_SERVER}/files/${tenant_id}/${site_id}`);
+  }
+
+  downloadFile(file_id: string): Observable<Blob> {
+    return this.http.get(`${environment.API_SERVER}/files/download/${file_id}`, { responseType: 'blob' });
   }
 }
