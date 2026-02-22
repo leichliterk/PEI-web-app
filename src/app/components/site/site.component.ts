@@ -6,12 +6,13 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { ChartModule } from 'primeng/chart';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Site, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
 import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-site',
-  imports: [CommonModule, CardModule, ButtonModule, BadgeModule, ChartModule],
+  imports: [CommonModule, CardModule, ButtonModule, BadgeModule, ChartModule, ProgressSpinnerModule],
   templateUrl: './site.component.html',
   styleUrl: './site.component.scss',
 })
@@ -28,6 +29,9 @@ export class SiteComponent implements OnInit, OnDestroy {
   accountingLogs: SiteFile[] = [];
   flareData: SiteFile[] = [];
   crFiles: SiteFile[] = [];
+  accountingLogsLoading: boolean = true;
+  flareDataLoading: boolean = true;
+  crFilesLoading: boolean = true;
   private wsSubscription?: Subscription;
   private uptimeInterval?: Subscription;
 
@@ -127,13 +131,19 @@ export class SiteComponent implements OnInit, OnDestroy {
 
     this.siteService.getSiteFiles(tenantId, this.siteId).subscribe({
       next: (files) => {
-        const sorted = files.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const sorted = files.sort((a, b) => b.filename.localeCompare(a.filename));
         this.accountingLogs = sorted.filter(f => f.category === 'accounting_log').slice(0, 5);
         this.flareData = sorted.filter(f => f.category === 'flare_data').slice(0, 5);
         this.crFiles = sorted.filter(f => f.category === 'cr_files').slice(0, 5);
+        this.accountingLogsLoading = false;
+        this.flareDataLoading = false;
+        this.crFilesLoading = false;
       },
       error: (error) => {
         console.error('Failed to load site files:', error);
+        this.accountingLogsLoading = false;
+        this.flareDataLoading = false;
+        this.crFilesLoading = false;
       }
     });
   }
