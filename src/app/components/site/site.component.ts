@@ -131,7 +131,7 @@ export class SiteComponent implements OnInit, OnDestroy {
 
     this.siteService.getSiteFiles(tenantId, this.siteId).subscribe({
       next: (files) => {
-        const sorted = files.sort((a, b) => b.filename.localeCompare(a.filename));
+        const sorted = files.sort((a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime());
         this.accountingLogs = sorted.filter(f => f.category === 'accounting_log').slice(0, 5);
         this.flareData = sorted.filter(f => f.category === 'flare_data').slice(0, 5);
         this.crFiles = sorted.filter(f => f.category === 'cr_files').slice(0, 5);

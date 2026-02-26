@@ -38,7 +38,7 @@ export interface SiteFile {
   source: string;
   sha256: string;
   category: 'accounting_log' | 'flare_data' | 'cr_files';
-  timestamp: string;
+  modifiedAt: string;
   createdAt: string;
 }
 
