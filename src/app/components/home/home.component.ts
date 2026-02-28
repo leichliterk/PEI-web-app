@@ -6,10 +6,11 @@ import { CommonModule } from '@angular/common';
 import { TenantService, Tenant, TenantSite } from '../../services/tenant.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'app-home',
-    imports: [CommonModule, SiteCardComponent, ProgressSpinnerModule],
+    imports: [CommonModule, SiteCardComponent, ProgressSpinnerModule, ButtonModule],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })
@@ -18,6 +19,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   tenant: undefined | Tenant;
   sites: Site[] = [];
+  layout: 'grid' | 'list' = 'grid';
   private wsSubscription?: Subscription;
 
   constructor(
