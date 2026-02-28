@@ -55,3 +55,19 @@
     <router-outlet></router-outlet>
   </main>
 </div>
+
+<!-- About Dialog -->
+<p-dialog
+  [(visible)]="aboutVisible"
+  header="About PEI Data Services"
+  [modal]="true"
+  [style]="{'width': '400px'}"
+  [resizable]="false"
+  [draggable]="false">
+  <div class="flex flex-col items-center gap-4 py-4">
+    <div class="text-center">
+      <p class="text-muted-color text-sm mb-1">Version</p>
+      <p class="text-2xl font-semibold">{{ appVersion }}</p>
+    </div>
+  </div>
+</p-dialog>

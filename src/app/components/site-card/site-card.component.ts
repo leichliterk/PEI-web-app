@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 })
 export class SiteCardComponent {
   @Input() siteData!: Site;
+  @Input() layout: 'grid' | 'list' = 'grid';
 
   constructor(private router: Router) {}
 

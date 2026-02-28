@@ -62,6 +62,10 @@
           <span class="text-muted-color">Current Uptime</span>
           <span class="font-semibold">{{ uptime }}</span>
         </div>
+        <div class="flex justify-between items-center py-2">
+          <span class="text-muted-color">App Version</span>
+          <span class="font-semibold">{{ siteData.app_version ?? '--' }}</span>
+        </div>
       </p-card>
 
       <p-card class="mt-4">
