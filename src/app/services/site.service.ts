@@ -7,6 +7,7 @@ export interface Site {
   site_id: number;
   name: string;
   connection_status: 'online' | 'warning' | 'offline';
+  app_version?: string;
 }
 
 export interface UptimeSession {
