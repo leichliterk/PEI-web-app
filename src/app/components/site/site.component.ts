@@ -7,12 +7,15 @@ import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { ChartModule } from 'primeng/chart';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
 import { Site, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
 import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-site',
-  imports: [CommonModule, CardModule, ButtonModule, BadgeModule, ChartModule, ProgressSpinnerModule],
+  imports: [CommonModule, CardModule, ButtonModule, BadgeModule, ChartModule, ProgressSpinnerModule, DialogModule, TableModule, InputTextModule],
   templateUrl: './site.component.html',
   styleUrl: './site.component.scss',
 })
@@ -29,9 +32,15 @@ export class SiteComponent implements OnInit, OnDestroy {
   accountingLogs: SiteFile[] = [];
   flareData: SiteFile[] = [];
   crFiles: SiteFile[] = [];
+  allAccountingLogs: SiteFile[] = [];
+  allFlareData: SiteFile[] = [];
+  allCrFiles: SiteFile[] = [];
   accountingLogsLoading: boolean = true;
   flareDataLoading: boolean = true;
   crFilesLoading: boolean = true;
+  fileDialogVisible: boolean = false;
+  fileDialogTitle: string = '';
+  fileDialogFiles: SiteFile[] = [];
   private wsSubscription?: Subscription;
   private uptimeInterval?: Subscription;
 
@@ -132,9 +141,12 @@ export class SiteComponent implements OnInit, OnDestroy {
     this.siteService.getSiteFiles(tenantId, this.siteId).subscribe({
       next: (files) => {
         const sorted = files.sort((a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime());
-        this.accountingLogs = sorted.filter(f => f.category === 'accounting_log').slice(0, 5);
-        this.flareData = sorted.filter(f => f.category === 'flare_data').slice(0, 5);
-        this.crFiles = sorted.filter(f => f.category === 'cr_files').slice(0, 5);
+        this.allAccountingLogs = sorted.filter(f => f.category === 'accounting_log');
+        this.allFlareData = sorted.filter(f => f.category === 'flare_data');
+        this.allCrFiles = sorted.filter(f => f.category === 'cr_files');
+        this.accountingLogs = this.allAccountingLogs.slice(0, 5);
+        this.flareData = this.allFlareData.slice(0, 5);
+        this.crFiles = this.allCrFiles.slice(0, 5);
         this.accountingLogsLoading = false;
         this.flareDataLoading = false;
         this.crFilesLoading = false;
@@ -162,6 +174,28 @@ export class SiteComponent implements OnInit, OnDestroy {
         console.error('Failed to download file:', error);
       }
     });
+  }
+
+  showAllFiles(category: 'accounting_log' | 'flare_data' | 'cr_files'): void {
+    const titles: Record<string, string> = {
+      accounting_log: 'Accounting Logs',
+      flare_data: 'Flare Data',
+      cr_files: 'CR Files'
+    };
+    const allFiles: Record<string, SiteFile[]> = {
+      accounting_log: this.allAccountingLogs,
+      flare_data: this.allFlareData,
+      cr_files: this.allCrFiles
+    };
+    this.fileDialogTitle = titles[category];
+    this.fileDialogFiles = allFiles[category];
+    this.fileDialogVisible = true;
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   private buildChartData(): void {

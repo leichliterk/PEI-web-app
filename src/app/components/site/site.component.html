@@ -92,7 +92,7 @@
                   </li>
                 }
                 <li>
-                  <a class="cursor-pointer text-muted-color hover:underline text-sm italic">Show more...</a>
+                  <a (click)="showAllFiles('accounting_log')" class="cursor-pointer text-muted-color hover:underline text-sm italic">Show more...</a>
                 </li>
               </ul>
             }
@@ -118,7 +118,7 @@
                   </li>
                 }
                 <li>
-                  <a class="cursor-pointer text-muted-color hover:underline text-sm italic">Show more...</a>
+                  <a (click)="showAllFiles('flare_data')" class="cursor-pointer text-muted-color hover:underline text-sm italic">Show more...</a>
                 </li>
               </ul>
             }
@@ -144,7 +144,7 @@
                   </li>
                 }
                 <li>
-                  <a class="cursor-pointer text-muted-color hover:underline text-sm italic">Show more...</a>
+                  <a (click)="showAllFiles('cr_files')" class="cursor-pointer text-muted-color hover:underline text-sm italic">Show more...</a>
                 </li>
               </ul>
             }
@@ -170,3 +170,67 @@
     </div>
   }
 </div>
+
+<!-- File Browser Dialog -->
+<p-dialog
+  [(visible)]="fileDialogVisible"
+  [header]="fileDialogTitle"
+  [modal]="true"
+  [style]="{'width': '700px'}"
+  [resizable]="true"
+  [draggable]="true">
+  <div class="mb-3">
+    <input
+      #fileSearch
+      pInputText
+      type="text"
+      placeholder="Search by filename..."
+      class="w-full"
+      (input)="dt.filterGlobal(fileSearch.value, 'contains')" />
+  </div>
+  <p-table
+    #dt
+    [value]="fileDialogFiles"
+    [globalFilterFields]="['filename']"
+    [sortField]="'modifiedAt'"
+    [sortOrder]="-1"
+    [scrollable]="true"
+    scrollHeight="400px"
+    class="p-datatable-sm p-datatable-striped">
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="filename">
+          Filename <p-sortIcon field="filename"></p-sortIcon>
+        </th>
+        <th pSortableColumn="modifiedAt" style="width: 180px">
+          Modified <p-sortIcon field="modifiedAt"></p-sortIcon>
+        </th>
+        <th pSortableColumn="size" style="width: 100px">
+          Size <p-sortIcon field="size"></p-sortIcon>
+        </th>
+        <th style="width: 80px"></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-file>
+      <tr>
+        <td>{{ file.filename }}</td>
+        <td>{{ file.modifiedAt | date:'medium' }}</td>
+        <td>{{ formatFileSize(file.size) }}</td>
+        <td>
+          <p-button
+            icon="pi pi-download"
+            [text]="true"
+            size="small"
+            (onClick)="downloadFile(file)"
+            pTooltip="Download">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4" class="text-center text-muted-color">No files found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>
