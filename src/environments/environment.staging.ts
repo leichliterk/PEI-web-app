@@ -1,7 +1,7 @@
 export const environment = {
     production: false,
     env_name: "STAGING",
-    app_version: "0.0.10",
+    app_version: "0.0.80",
     API_SERVER: "https://pei-web-server-staging.onrender.com/api/data",
     WS_SERVER: "https://pei-web-server-staging.onrender.com",
     AUTH_DOMAIN: "sv-pei.us.auth0.com",

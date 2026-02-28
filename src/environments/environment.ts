@@ -5,7 +5,7 @@
 export const environment = {
     production: false,
     env_name: "DEVELOPMENT",
-    app_version: "0.0.10",
+    app_version: "0.0.80",
     API_SERVER: "http://localhost:443/api/data",
     WS_SERVER: "http://localhost:443",
     AUTH_DOMAIN: "sv-pei.us.auth0.com",

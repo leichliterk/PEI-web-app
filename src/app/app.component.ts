@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { Menu, MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 import { UserService } from './services/user.service';
 import { WebSocketService } from './services/websocket.service';
 import { TenantService } from './services/tenant.service';
@@ -13,7 +14,7 @@ import { environment } from '../environments/environment';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, ToolbarModule, ButtonModule, CommonModule, MenuModule],
+    imports: [RouterOutlet, ToolbarModule, ButtonModule, CommonModule, MenuModule, DialogModule],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
@@ -24,6 +25,8 @@ export class AppComponent implements OnInit {
   isAuthenticated$;
   user$;
   environment = environment;
+  aboutVisible: boolean = false;
+  appVersion: string = environment.app_version;
 
   @ViewChild('profileMenu') profileMenu!: Menu;
 
@@ -71,6 +74,14 @@ export class AppComponent implements OnInit {
         separator: true
       },
       {
+        label: 'About',
+        icon: 'pi pi-info-circle',
+        command: () => this.showAbout()
+      },
+      {
+        separator: true
+      },
+      {
         label: 'Log Out',
         icon: 'pi pi-sign-out',
         command: () => this.logout()
@@ -80,6 +91,10 @@ export class AppComponent implements OnInit {
 
   toggleProfileMenu(event: Event) {
     this.profileMenu.toggle(event);
+  }
+
+  showAbout() {
+    this.aboutVisible = true;
   }
 
   login() {
