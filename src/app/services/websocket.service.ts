@@ -50,12 +50,9 @@ export class WebSocketService implements OnDestroy {
       });
 
       this.socket.on('connect', () => {
-        console.log('[WS] connected, auth0Id=', this.auth0Id);
         this.subscribeTenant(tenantId);
         if (this.auth0Id) {
           this.emitIdentify(this.auth0Id);
-        } else {
-          console.warn('[WS] connected but auth0Id not set yet — user:identify will be deferred');
         }
       });
 
@@ -78,11 +75,6 @@ export class WebSocketService implements OnDestroy {
       this.socket.on('connect_error', (error: Error) => {
         console.error('Socket.IO connection error:', error);
       });
-
-      // Debug: log all received events
-      this.socket.onAny((event: string, ...args: any[]) => {
-        console.log('[WS] event received:', event, args);
-      });
     });
   }
 
@@ -94,7 +86,6 @@ export class WebSocketService implements OnDestroy {
   }
 
   private emitIdentify(auth0Id: string): void {
-    console.log('[WS] emitting user:identify for', auth0Id);
     this.socket?.emit('user:identify', { auth0_id: auth0Id });
   }
 
