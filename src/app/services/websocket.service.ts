@@ -9,15 +9,27 @@ export interface SiteStatusUpdate {
   last_seen?: string;
 }
 
+export interface WsNotification {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  data?: any;
+  created_at: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService implements OnDestroy {
   private socket: Socket | null = null;
   private siteStatusSubject = new Subject<SiteStatusUpdate>();
+  private notificationSubject = new Subject<WsNotification>();
   private tenantId: number | null = null;
+  private auth0Id: string | null = null;
 
   siteStatus$: Observable<SiteStatusUpdate> = this.siteStatusSubject.asObservable();
+  notification$: Observable<WsNotification> = this.notificationSubject.asObservable();
 
   constructor(private ngZone: NgZone) {}
 
@@ -39,6 +51,9 @@ export class WebSocketService implements OnDestroy {
 
       this.socket.on('connect', () => {
         this.subscribeTenant(tenantId);
+        if (this.auth0Id) {
+          this.emitIdentify(this.auth0Id);
+        }
       });
 
       this.socket.on('site_status_update', (data: SiteStatusUpdate) => {
@@ -51,10 +66,27 @@ export class WebSocketService implements OnDestroy {
         });
       });
 
+      this.socket.on('notification', (data: WsNotification) => {
+        this.ngZone.run(() => {
+          this.notificationSubject.next(data);
+        });
+      });
+
       this.socket.on('connect_error', (error: Error) => {
         console.error('Socket.IO connection error:', error);
       });
     });
+  }
+
+  identify(auth0Id: string): void {
+    this.auth0Id = auth0Id;
+    if (this.socket?.connected) {
+      this.emitIdentify(auth0Id);
+    }
+  }
+
+  private emitIdentify(auth0Id: string): void {
+    this.socket?.emit('user:identify', { auth0_id: auth0Id });
   }
 
   private subscribeTenant(tenantId: number): void {
@@ -71,10 +103,12 @@ export class WebSocketService implements OnDestroy {
       this.socket.disconnect();
       this.socket = null;
     }
+    this.auth0Id = null;
   }
 
   ngOnDestroy(): void {
     this.disconnect();
     this.siteStatusSubject.complete();
+    this.notificationSubject.complete();
   }
 }
