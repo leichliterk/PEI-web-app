@@ -75,6 +75,11 @@ export class WebSocketService implements OnDestroy {
       this.socket.on('connect_error', (error: Error) => {
         console.error('Socket.IO connection error:', error);
       });
+
+      // Debug: log all received events
+      this.socket.onAny((event: string, ...args: any[]) => {
+        console.log('[WS] event received:', event, args);
+      });
     });
   }
 
