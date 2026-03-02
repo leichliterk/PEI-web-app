@@ -29,6 +29,22 @@
             (onClick)="navigateToSettings()"
             aria-label="Settings">
           </p-button>
+          <!-- Notification Bell -->
+          <div class="relative">
+            <p-button
+              icon="pi pi-bell"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              (onClick)="toggleNotifications($event)"
+              aria-label="Notifications">
+            </p-button>
+            @if (unreadCount > 0) {
+              <span class="absolute top-0 right-0 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white font-bold pointer-events-none" style="font-size: 10px; line-height: 1;">
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
+            }
+          </div>
           @if (userInitials) {
             <div
               class="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 text-white font-semibold text-sm cursor-pointer transition-colors duration-200 select-none hover:bg-white/30"
@@ -55,6 +71,40 @@
     <router-outlet></router-outlet>
   </main>
 </div>
+
+<!-- Notification Panel -->
+<p-popover #notificationPanel [style]="{'width': '400px'}">
+  <div class="flex justify-between items-center mb-3">
+    <h3 class="text-lg font-semibold m-0">Notifications</h3>
+    @if (unreadCount > 0) {
+      <p-button label="Mark all read" [text]="true" size="small" (onClick)="markAllRead()"></p-button>
+    }
+  </div>
+  @if (notifications.length === 0) {
+    <p class="text-muted-color text-center py-4 m-0">No notifications</p>
+  } @else {
+    <div class="flex flex-col gap-1" style="max-height: 420px; overflow-y: auto;">
+      @for (notif of notifications; track notif.id) {
+        <div
+          class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-surface-100"
+          (click)="markNotificationRead(notif.id)">
+          <span
+            class="mt-1.5 w-2 h-2 rounded-full flex-shrink-0 transition-colors duration-150"
+            [class.bg-blue-500]="!notif.read"
+            [class.bg-transparent]="notif.read">
+          </span>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start gap-2">
+              <span class="font-semibold text-sm" [class.text-muted-color]="notif.read">{{ notif.title }}</span>
+              <span class="text-xs text-muted-color whitespace-nowrap flex-shrink-0">{{ notif.created_at | date:'M/d, h:mm a' }}</span>
+            </div>
+            <p class="text-sm m-0 mt-1 text-muted-color">{{ notif.body }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</p-popover>
 
 <!-- About Dialog -->
 <p-dialog
