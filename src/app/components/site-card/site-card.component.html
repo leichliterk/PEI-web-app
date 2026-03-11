@@ -6,10 +6,13 @@
           <h3 class="text-xl font-semibold m-0">{{ siteData.name }}</h3>
           <p class="text-muted-color text-sm m-0">Site ID: {{ siteData.site_id }}</p>
         </div>
-        <p-badge
-          [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
-          [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')">
-        </p-badge>
+        <div class="flex flex-col items-end gap-1">
+          <p-badge
+            [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
+            [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')">
+          </p-badge>
+          <p class="text-xs text-muted-color m-0">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d h:mm a') : '--' }}</p>
+        </div>
       </div>
     </ng-template>
     <!-- Row 1: Flr Flow | CH4 | MMBTU/HR -->
@@ -53,6 +56,7 @@
       <div class="min-w-[180px]">
         <p class="text-lg font-semibold m-0">{{ siteData.name }}</p>
         <p class="text-muted-color text-sm m-0">Site ID: {{ siteData.site_id }}</p>
+        <p class="text-xs text-muted-color m-0">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d h:mm a') : '--' }}</p>
       </div>
       <!-- Row 1 metrics -->
       <div class="flex gap-6 flex-1">
