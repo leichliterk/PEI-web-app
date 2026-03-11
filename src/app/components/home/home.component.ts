@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Site } from '../../services/site.service';
+import { Site, SiteDataReading, SiteService } from '../../services/site.service';
 import { SiteCardComponent } from '../site-card/site-card.component';
 import { CommonModule } from '@angular/common';
 import { TenantService, Tenant, TenantSite } from '../../services/tenant.service';
@@ -20,11 +20,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   tenant: undefined | Tenant;
   sites: Site[] = [];
   layout: 'grid' | 'list' = 'grid';
+  readings: { [site_id: number]: SiteDataReading } = {};
   private wsSubscription?: Subscription;
+  private siteDataSubscription?: Subscription;
 
   constructor(
     private tenantService: TenantService,
-    private webSocketService: WebSocketService
+    private webSocketService: WebSocketService,
+    private siteService: SiteService
   ) { }
 
   ngOnInit(): void {
@@ -38,7 +41,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         }));
         this.loading = false;
 
-        // Subscribe to WebSocket updates (connection managed by app.component)
+        this.siteService.getLatestReadings(t.tenant_id).subscribe({
+          next: (response) => {
+            const map: { [site_id: number]: SiteDataReading } = {};
+            for (const r of response.sites) {
+              map[r.site_id] = r;
+            }
+            this.readings = map;
+          }
+        });
+
         this.wsSubscription = this.webSocketService.siteStatus$.subscribe(update => {
           this.sites = this.sites.map(site =>
             site.site_id === update.site_id
@@ -51,10 +63,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         console.error('Error loading tenant:', error);
       }
     });
+
+    this.siteDataSubscription = this.webSocketService.siteData$.subscribe(reading => {
+      this.readings = { ...this.readings, [reading.site_id]: reading };
+    });
   }
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
+    this.siteDataSubscription?.unsubscribe();
   }
 
   private mapConnectionStatus(status?: boolean): 'online' | 'warning' | 'offline' {

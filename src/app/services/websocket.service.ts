@@ -2,6 +2,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../environments/environment';
+import { SiteDataReading } from './site.service';
 
 export interface SiteStatusUpdate {
   site_id: number;
@@ -25,11 +26,13 @@ export class WebSocketService implements OnDestroy {
   private socket: Socket | null = null;
   private siteStatusSubject = new Subject<SiteStatusUpdate>();
   private notificationSubject = new Subject<WsNotification>();
+  private siteDataSubject = new Subject<SiteDataReading>();
   private tenantId: number | null = null;
   private auth0Id: string | null = null;
 
   siteStatus$: Observable<SiteStatusUpdate> = this.siteStatusSubject.asObservable();
   notification$: Observable<WsNotification> = this.notificationSubject.asObservable();
+  siteData$: Observable<SiteDataReading> = this.siteDataSubject.asObservable();
 
   constructor(private ngZone: NgZone) {}
 
@@ -72,6 +75,12 @@ export class WebSocketService implements OnDestroy {
         });
       });
 
+      this.socket.on('site_data', (data: SiteDataReading) => {
+        this.ngZone.run(() => {
+          this.siteDataSubject.next(data);
+        });
+      });
+
       this.socket.on('connect_error', (error: Error) => {
         console.error('Socket.IO connection error:', error);
       });
@@ -110,5 +119,6 @@ export class WebSocketService implements OnDestroy {
     this.disconnect();
     this.siteStatusSubject.complete();
     this.notificationSubject.complete();
+    this.siteDataSubject.complete();
   }
 }

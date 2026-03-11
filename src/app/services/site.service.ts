@@ -30,6 +30,22 @@ export interface SiteUptime {
   sessions: UptimeSession[];
 }
 
+export interface SiteDataReading {
+  site_id: number;
+  tenant_id: number;
+  timestamp: string;
+  flr_flow: number;
+  ch4: number;
+  inlet_pressure: number;
+  o2: number;
+  flr_sdv: number;
+}
+
+export interface LatestReadingsResponse {
+  tenant_id: number;
+  sites: SiteDataReading[];
+}
+
 export interface SiteFile {
   _id: string;
   tenant_id: number;
@@ -64,6 +80,10 @@ export class SiteService {
 
   getSiteFiles(tenant_id: number, site_id: number): Observable<SiteFile[]> {
     return this.http.get<SiteFile[]>(`${environment.API_SERVER}/files/${tenant_id}/${site_id}`);
+  }
+
+  getLatestReadings(tenant_id: number): Observable<LatestReadingsResponse> {
+    return this.http.get<LatestReadingsResponse>(`${environment.API_SERVER}/accounting/${tenant_id}/latest`);
   }
 
   downloadFile(file_id: string): Observable<Blob> {
