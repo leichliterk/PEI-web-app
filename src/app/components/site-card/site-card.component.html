@@ -53,13 +53,13 @@
 } @else {
   <p-card class="site-card cursor-pointer w-full" [class.flare-alert]="reading?.flr_flow === 0" (click)="navigateToSite()">
     <div class="flex justify-between items-center gap-4">
-      <div class="min-w-[180px]">
+      <div class="w-[200px] shrink-0">
         <p class="text-lg font-semibold m-0">{{ siteData.name }}</p>
         <p class="text-muted-color text-sm m-0">Site ID: {{ siteData.site_id }}</p>
         <p class="text-xs text-muted-color m-0">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d h:mm a') : '--' }}</p>
       </div>
       <!-- Row 1 metrics -->
-      <div class="flex gap-6 flex-1">
+      <div class="grid grid-cols-3 flex-1">
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Flr Flow</p>
           <p class="text-sm font-semibold m-0">{{ reading?.flr_flow?.toFixed(1) ?? '--' }}</p>
@@ -74,7 +74,7 @@
         </div>
       </div>
       <!-- Row 2 metrics -->
-      <div class="flex gap-6 flex-1 border-l border-surface-200 pl-6">
+      <div class="grid grid-cols-3 flex-1 border-l border-surface-200 pl-6">
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Inlet Pressure</p>
           <p class="text-sm font-semibold m-0">{{ reading?.inlet_pressure?.toFixed(1) ?? '--' }}</p>
@@ -88,10 +88,12 @@
           <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv?.toFixed(1) ?? '--' }}</p>
         </div>
       </div>
-      <p-badge
-        [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
-        [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')">
-      </p-badge>
+      <div class="w-[100px] shrink-0 flex justify-end">
+        <p-badge
+          [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
+          [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')">
+        </p-badge>
+      </div>
     </div>
   </p-card>
 }
