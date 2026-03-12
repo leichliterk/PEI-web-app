@@ -14,7 +14,7 @@
     </div>
   } @else if (siteData) {
     <div class="w-full min-w-[50vw]">
-      <p-card>
+      <p-card [class.flare-alert]="reading?.flr_flow === 0">
         <ng-template pTemplate="header">
           <div class="flex justify-between items-center p-6">
             <div>
@@ -22,8 +22,8 @@
               <p class="text-muted-color mt-2">Site ID: {{ siteData.site_id }}</p>
             </div>
             <p-badge
-              [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
-              [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')"
+              [severity]="reading?.flr_flow === 0 ? 'danger' : (siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger'))"
+              [value]="reading?.flr_flow === 0 ? 'SHUTDOWN' : (siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline'))"
               class="text-lg">
             </p-badge>
           </div>

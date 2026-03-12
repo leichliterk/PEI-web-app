@@ -8,8 +8,8 @@
         </div>
         <div class="flex flex-col items-end gap-1">
           <p-badge
-            [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
-            [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')">
+            [severity]="reading?.flr_flow === 0 ? 'danger' : (siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger'))"
+            [value]="reading?.flr_flow === 0 ? 'SHUTDOWN' : (siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline'))">
           </p-badge>
           <p class="text-xs text-muted-color m-0">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d h:mm a') : '--' }}</p>
         </div>
@@ -90,8 +90,8 @@
       </div>
       <div class="w-[100px] shrink-0 flex justify-end">
         <p-badge
-          [severity]="siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger')"
-          [value]="siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline')">
+          [severity]="reading?.flr_flow === 0 ? 'danger' : (siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger'))"
+          [value]="reading?.flr_flow === 0 ? 'SHUTDOWN' : (siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline'))">
         </p-badge>
       </div>
     </div>
