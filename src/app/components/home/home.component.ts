@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Site, SiteDataReading, SiteService } from '../../services/site.service';
 import { SiteCardComponent } from '../site-card/site-card.component';
@@ -7,20 +7,49 @@ import { TenantService, Tenant, TenantSite } from '../../services/tenant.service
 import { WebSocketService } from '../../services/websocket.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 
 @Component({
     selector: 'app-home',
-    imports: [CommonModule, SiteCardComponent, ProgressSpinnerModule, ButtonModule],
+    imports: [CommonModule, SiteCardComponent, ProgressSpinnerModule, ButtonModule, MenuModule],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
+  @ViewChild('sortMenu') sortMenu!: Menu;
+
+  openSortMenu(event: MouseEvent): void {
+    const target = (event.target as HTMLElement).closest('button') ?? event.currentTarget;
+    this.sortMenu.toggle({ currentTarget: target } as Event);
+  }
+
   loading: boolean = true;
   tenant: undefined | Tenant;
   sites: Site[] = [];
   layout: 'grid' | 'list' = 'grid';
+  sortBy: 'name' | 'site_id' = 'name';
+  sortMenuItems: MenuItem[] = [
+    { label: 'Site Name', icon: 'pi pi-check', command: () => this.setSort('name') },
+    { label: 'Site ID', icon: 'pi pi-fw', command: () => this.setSort('site_id') }
+  ];
+
+  setSort(value: 'name' | 'site_id'): void {
+    this.sortBy = value;
+    this.sortMenuItems[0].icon = value === 'name' ? 'pi pi-check' : 'pi pi-fw';
+    this.sortMenuItems[1].icon = value === 'site_id' ? 'pi pi-check' : 'pi pi-fw';
+  }
   readings: { [site_id: number]: SiteDataReading } = {};
+
+  get sortedSites(): Site[] {
+    return [...this.sites].sort((a, b) =>
+      this.sortBy === 'name'
+        ? a.name.localeCompare(b.name)
+        : a.site_id - b.site_id
+    );
+  }
   private wsSubscription?: Subscription;
   private siteDataSubscription?: Subscription;
 

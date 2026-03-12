@@ -10,7 +10,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
-import { Site, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
+import { Site, SiteDataReading, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
 import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
@@ -41,8 +41,15 @@ export class SiteComponent implements OnInit, OnDestroy {
   fileDialogVisible: boolean = false;
   fileDialogTitle: string = '';
   fileDialogFiles: SiteFile[] = [];
+  reading: SiteDataReading | undefined;
   private wsSubscription?: Subscription;
+  private siteDataSubscription?: Subscription;
   private uptimeInterval?: Subscription;
+
+  get mmBtuHr(): number | null {
+    if (!this.reading) return null;
+    return (this.reading.flr_flow * 60 * 1000 * this.reading.ch4) / 1000000;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -63,6 +70,7 @@ export class SiteComponent implements OnInit, OnDestroy {
       this.subscribeToStatusUpdates();
       this.loadUptimeData();
       this.loadSiteFiles();
+      this.loadLatestReading();
     } else {
       // Fallback: get site ID from route params
       this.route.params.subscribe(params => {
@@ -71,13 +79,30 @@ export class SiteComponent implements OnInit, OnDestroy {
         this.subscribeToStatusUpdates();
         this.loadUptimeData();
         this.loadSiteFiles();
+        this.loadLatestReading();
       });
     }
   }
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
+    this.siteDataSubscription?.unsubscribe();
     this.uptimeInterval?.unsubscribe();
+  }
+
+  private loadLatestReading(): void {
+    const tenantId = 1001;
+    this.siteService.getLatestReadings(tenantId).subscribe({
+      next: (response) => {
+        this.reading = response.sites.find(r => r.site_id === this.siteId);
+      }
+    });
+
+    this.siteDataSubscription = this.webSocketService.siteData$.subscribe(r => {
+      if (r.site_id === this.siteId) {
+        this.reading = r;
+      }
+    });
   }
 
   private subscribeToStatusUpdates(): void {
