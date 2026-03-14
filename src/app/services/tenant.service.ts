@@ -9,6 +9,7 @@ export interface TenantSite {
   api_key?: string;
   connection_status?: boolean;
   last_seen?: string;
+  app_version?: string;
 }
 
 export interface Tenant {
