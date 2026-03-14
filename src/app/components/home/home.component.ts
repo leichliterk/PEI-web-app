@@ -67,6 +67,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           site_id: s.site_id,
           name: s.name,
           connection_status: this.mapConnectionStatus(s.connection_status),
+          app_version: s.app_version,
         }));
         this.loading = false;
 
