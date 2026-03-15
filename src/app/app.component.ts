@@ -132,6 +132,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.notificationService.markRead(id);
   }
 
+  deleteNotification(id: string, event: Event) {
+    event.stopPropagation();
+    this.notificationService.deleteNotification(id);
+  }
+
   markAllRead() {
     if (this.auth0Id) {
       this.notificationService.markAllRead(this.auth0Id);

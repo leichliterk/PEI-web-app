@@ -11,6 +11,7 @@ export interface AppNotification {
   type: string;
   data?: any;
   created_at: string;
+  read_at: string | null;
   read: boolean;
 }
 
@@ -27,7 +28,7 @@ export class NotificationService {
     private webSocketService: WebSocketService
   ) {
     this.webSocketService.notification$.subscribe(wsNotif => {
-      const notification: AppNotification = { ...wsNotif, read: false };
+      const notification: AppNotification = { ...wsNotif, read_at: null, read: false };
       this.notificationsSubject.next([notification, ...this.notificationsSubject.value]);
     });
   }
@@ -38,9 +39,15 @@ export class NotificationService {
     ).subscribe({
       next: (response) => {
         // API may return an array directly or wrap it in an object
-        const notifications: AppNotification[] = Array.isArray(response)
+        const raw: any[] = Array.isArray(response)
           ? response
           : (response?.notifications ?? response?.data ?? []);
+        const notifications: AppNotification[] = raw.map(n => ({
+          ...n,
+          id: n.id ?? n.notification_id ?? n._id,
+          read_at: n.read_at ?? null,
+          read: !!n.read_at,
+        }));
         this.notificationsSubject.next(notifications);
       },
       error: (err) => console.error('Failed to load notifications:', err)
@@ -48,14 +55,27 @@ export class NotificationService {
   }
 
   markRead(id: string): void {
-    this.http.patch(`${environment.API_SERVER}/notifications/${id}/read`, {}).subscribe({
-      next: () => {
+    const notification = this.notificationsSubject.value.find(n => n.id === id);
+    if (!notification || notification.read) return;
+
+    this.http.patch<{ notification: { read_at: string } }>(`${environment.API_SERVER}/notifications/${encodeURIComponent(id)}/read`, {}).subscribe({
+      next: (response) => {
+        const read_at = response?.notification?.read_at ?? new Date().toISOString();
         const updated = this.notificationsSubject.value.map(n =>
-          n.id === id ? { ...n, read: true } : n
+          n.id === id ? { ...n, read_at, read: true } : n
         );
         this.notificationsSubject.next(updated);
       },
       error: (err) => console.error('Failed to mark notification read:', err)
+    });
+  }
+
+  deleteNotification(id: string): void {
+    this.http.delete(`${environment.API_SERVER}/notifications/${encodeURIComponent(id)}`).subscribe({
+      next: () => {
+        this.notificationsSubject.next(this.notificationsSubject.value.filter(n => n.id !== id));
+      },
+      error: (err) => console.error('Failed to delete notification:', err)
     });
   }
 
