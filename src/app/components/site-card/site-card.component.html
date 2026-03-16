@@ -46,7 +46,7 @@
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">Flr SDV</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv?.toFixed(1) ?? '--' }}</p>
+        <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv == null ? '--' : (reading!.flr_sdv === 0 ? 'Open' : 'Closed') }}</p>
       </div>
     </div>
   </p-card>
@@ -85,7 +85,7 @@
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Flr SDV</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv?.toFixed(1) ?? '--' }}</p>
+          <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv == null ? '--' : (reading!.flr_sdv === 0 ? 'Open' : 'Closed') }}</p>
         </div>
       </div>
       <div class="w-[100px] shrink-0 flex justify-end">
