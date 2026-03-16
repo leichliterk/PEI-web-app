@@ -40,11 +40,11 @@
         <div class="grid grid-cols-3 gap-6 py-2 text-center">
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">Flr Flow</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.flr_flow?.toFixed(1) ?? '--' }}</p>
+            <p class="text-lg font-semibold m-0">{{ reading?.flr_flow?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">CH4</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.ch4 != null ? (reading!.ch4 * 100).toFixed(1) + '%' : '--' }}</p>
+            <p class="text-lg font-semibold m-0">{{ reading?.ch4 != null ? reading!.ch4.toFixed(1) + '%' : '--' }}</p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">MMBTU/HR</p>
@@ -54,7 +54,7 @@
         <div class="grid grid-cols-3 gap-6 py-2 border-t border-surface-200 text-center">
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">Inlet Pressure</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.inlet_pressure?.toFixed(1) ?? '--' }}</p>
+            <p class="text-lg font-semibold m-0">{{ reading?.inlet_pressure?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">O2</p>
