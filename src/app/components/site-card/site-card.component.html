@@ -41,7 +41,7 @@
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">O2</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.o2 != null ? (reading!.o2 * 100).toFixed(1) + '%' : '--' }}</p>
+        <p class="text-sm font-semibold m-0">{{ reading?.o2 != null ? reading!.o2.toFixed(1) + '%' : '--' }}</p>
       </div>
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
@@ -81,7 +81,7 @@
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">O2</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.o2 != null ? (reading!.o2 * 100).toFixed(1) + '%' : '--' }}</p>
+          <p class="text-sm font-semibold m-0">{{ reading?.o2 != null ? reading!.o2.toFixed(1) + '%' : '--' }}</p>
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Flr SDV</p>
