@@ -20,7 +20,7 @@ export class SiteCardComponent {
 
   get mmBtuHr(): number | null {
     if (!this.reading) return null;
-    return (this.reading.flr_flow * 60 * 1000 * this.reading.ch4) / 100000000;
+    return (this.reading.flr_flow * 60 * 1011 * this.reading.ch4) / 100000000;
   }
 
   navigateToSite(): void {
