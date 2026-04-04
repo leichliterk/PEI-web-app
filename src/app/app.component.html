@@ -29,6 +29,16 @@
             (onClick)="navigateToSettings()"
             aria-label="Settings">
           </p-button>
+          @if (isAdmin) {
+            <p-button
+              icon="pi pi-shield"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              (onClick)="navigateToAdmin()"
+              aria-label="Administration">
+            </p-button>
+          }
           <!-- Notification Bell -->
           <div class="relative">
             <p-button

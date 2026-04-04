@@ -1,0 +1,132 @@
+<p-toast></p-toast>
+
+<div class="px-4 py-8">
+<div class="w-[1200px] mx-auto">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold m-0">OTA Release Management</h2>
+      <p class="text-muted-color mt-1 mb-0">Manage firmware/software releases for site applications</p>
+    </div>
+    <p-button
+      label="New Release"
+      icon="pi pi-plus"
+      (onClick)="openCreateDialog()">
+    </p-button>
+  </div>
+
+  <p-table
+    [value]="releases"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    size="small"
+    [tableStyle]="{'min-width': '100%'}">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Version</th>
+        <th>Notes</th>
+        <th>Status</th>
+        <th>File</th>
+        <th>Size</th>
+        <th>Created</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-release>
+      <tr>
+        <td class="font-mono font-semibold">{{ release.version }}</td>
+        <td class="text-muted-color max-w-xs truncate">{{ release.notes || '—' }}</td>
+        <td>
+          <p-tag
+            [value]="release.status"
+            [severity]="statusSeverity(release.status)">
+          </p-tag>
+        </td>
+        <td class="text-sm font-mono">{{ release.filename || '—' }}</td>
+        <td class="text-sm text-muted-color">{{ formatBytes(release.size) }}</td>
+        <td class="text-sm text-muted-color">{{ release.createdAt | date:'M/d/yy, h:mm a' }}</td>
+        <td>
+          @if (release.status !== 'archived') {
+            <p-button
+              icon="pi pi-archive"
+              [text]="true"
+              [rounded]="true"
+              size="small"
+              severity="warn"
+              (onClick)="archiveRelease(release)"
+              title="Archive">
+            </p-button>
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="empty">
+      <tr>
+        <td colspan="7" class="text-center py-8 text-muted-color">
+          No releases yet. Create your first release.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+</div>
+
+<!-- Create Release Dialog -->
+<p-dialog
+  [(visible)]="createDialogVisible"
+  header="New OTA Release"
+  [modal]="true"
+  [style]="{'width': '480px'}"
+  [resizable]="false"
+  [draggable]="false">
+  <div class="flex flex-col gap-4 py-2">
+    <div class="flex flex-col gap-1">
+      <label class="font-medium text-sm">Version <span class="text-red-500">*</span></label>
+      <input
+        pInputText
+        [(ngModel)]="newRelease.version"
+        placeholder="e.g. 1.2.3"
+        class="w-full font-mono" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-medium text-sm">Release Notes</label>
+      <textarea
+        pTextarea
+        [(ngModel)]="newRelease.notes"
+        placeholder="Release notes or change summary..."
+        [rows]="4"
+        class="w-full">
+      </textarea>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-medium text-sm">Installer File</label>
+      <input
+        type="file"
+        accept=".exe"
+        (change)="onNewReleaseFileSelected($event)"
+        class="block w-full text-sm text-muted-color file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer" />
+      @if (newReleaseFile) {
+        <span class="text-xs text-muted-color">{{ newReleaseFile.name }} ({{ formatBytes(newReleaseFile.size) }})</span>
+      }
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [text]="true"
+      (onClick)="createDialogVisible = false">
+    </p-button>
+    <p-button
+      label="Create Release"
+      icon="pi pi-check"
+      [loading]="saving"
+      [disabled]="!newRelease.version"
+      (onClick)="createRelease()">
+    </p-button>
+  </ng-template>
+</p-dialog>
