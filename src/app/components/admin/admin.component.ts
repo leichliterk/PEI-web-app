@@ -15,15 +15,17 @@ import { environment } from '../../../environments/environment';
 
 export interface OtaRelease {
   _id: string;
+  tenant_id: number;
   version: string;
-  name: string;
-  description: string;
-  status: 'draft' | 'published' | 'deprecated';
-  file_url?: string;
-  file_name?: string;
-  file_size?: number;
-  created_at: string;
-  updated_at: string;
+  filename: string;
+  size: number;
+  sha256: string;
+  notes: string;
+  gridfs_file_id: string;
+  created_by: string;
+  status: 'active' | 'superseded' | 'archived';
+  createdAt: string;
+  updatedAt: string;
 }
 
 @Component({
@@ -49,13 +51,9 @@ export class AdminComponent implements OnInit {
   loading = true;
 
   createDialogVisible = false;
-  uploadDialogVisible = false;
 
-  newRelease = { version: '', name: '', description: '' };
+  newRelease = { version: '', notes: '' };
   newReleaseFile: File | null = null;
-  selectedRelease: OtaRelease | null = null;
-  selectedFile: File | null = null;
-  uploading = false;
   saving = false;
 
   constructor(
@@ -88,7 +86,7 @@ export class AdminComponent implements OnInit {
   }
 
   openCreateDialog(): void {
-    this.newRelease = { version: '', name: '', description: '' };
+    this.newRelease = { version: '', notes: '' };
     this.newReleaseFile = null;
     this.createDialogVisible = true;
   }
@@ -99,17 +97,17 @@ export class AdminComponent implements OnInit {
   }
 
   createRelease(): void {
-    if (!this.newRelease.version || !this.newRelease.name) return;
+    if (!this.newRelease.version) return;
     this.saving = true;
 
-    const tenantId = this.userService.appUserValue?.tenant_id;
-    if (!tenantId) return;
+    const user = this.userService.appUserValue;
+    if (!user) return;
 
     const formData = new FormData();
-    formData.append('tenant_id', String(tenantId));
+    formData.append('tenant_id', String(user.tenant_id));
     formData.append('version', this.newRelease.version);
-    formData.append('name', this.newRelease.name);
-    formData.append('description', this.newRelease.description);
+    formData.append('notes', this.newRelease.notes);
+    formData.append('created_by', user.auth0_id);
     if (this.newReleaseFile) {
       formData.append('exe', this.newReleaseFile);
     }
@@ -128,61 +126,14 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  openUploadDialog(release: OtaRelease): void {
-    this.selectedRelease = release;
-    this.selectedFile = null;
-    this.uploadDialogVisible = true;
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.selectedFile = input.files?.[0] ?? null;
-  }
-
-  uploadInstaller(): void {
-    if (!this.selectedRelease || !this.selectedFile) return;
-    this.uploading = true;
-
-    const formData = new FormData();
-    formData.append('exe', this.selectedFile);
-
-    this.http.post<OtaRelease>(
-      `${environment.API_SERVER}/ota/upload`,
-      formData
-    ).subscribe({
+  archiveRelease(release: OtaRelease): void {
+    this.http.patch<OtaRelease>(`${environment.API_SERVER}/ota/releases/${release._id}`, { status: 'archived' }).subscribe({
       next: updated => {
         this.releases = this.releases.map(r => r._id === updated._id ? updated : r);
-        this.uploadDialogVisible = false;
-        this.uploading = false;
-        this.messageService.add({ severity: 'success', summary: 'Uploaded', detail: 'Installer file uploaded' });
+        this.messageService.add({ severity: 'warn', summary: 'Archived', detail: `v${updated.version} archived` });
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Upload failed' });
-        this.uploading = false;
-      }
-    });
-  }
-
-  publishRelease(release: OtaRelease): void {
-    this.http.patch<OtaRelease>(`${environment.API_SERVER}/releases/${release._id}`, { status: 'published' }).subscribe({
-      next: updated => {
-        this.releases = this.releases.map(r => r._id === updated._id ? updated : r);
-        this.messageService.add({ severity: 'success', summary: 'Published', detail: `v${updated.version} is now live` });
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to publish release' });
-      }
-    });
-  }
-
-  deprecateRelease(release: OtaRelease): void {
-    this.http.patch<OtaRelease>(`${environment.API_SERVER}/releases/${release._id}`, { status: 'deprecated' }).subscribe({
-      next: updated => {
-        this.releases = this.releases.map(r => r._id === updated._id ? updated : r);
-        this.messageService.add({ severity: 'warn', summary: 'Deprecated', detail: `v${updated.version} deprecated` });
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to deprecate release' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to archive release' });
       }
     });
   }
@@ -196,9 +147,9 @@ export class AdminComponent implements OnInit {
 
   statusSeverity(status: string): 'success' | 'warn' | 'secondary' | 'danger' {
     switch (status) {
-      case 'published': return 'success';
-      case 'draft': return 'secondary';
-      case 'deprecated': return 'warn';
+      case 'active': return 'success';
+      case 'superseded': return 'secondary';
+      case 'archived': return 'warn';
       default: return 'secondary';
     }
   }

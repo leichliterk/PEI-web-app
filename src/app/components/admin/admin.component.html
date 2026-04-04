@@ -26,71 +26,40 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Version</th>
-        <th>Name</th>
-        <th>Description</th>
+        <th>Notes</th>
         <th>Status</th>
-        <th>Installer</th>
+        <th>File</th>
+        <th>Size</th>
         <th>Created</th>
-        <th>Actions</th>
+        <th></th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-release>
       <tr>
         <td class="font-mono font-semibold">{{ release.version }}</td>
-        <td>{{ release.name }}</td>
-        <td class="text-muted-color max-w-xs truncate">{{ release.description || '—' }}</td>
+        <td class="text-muted-color max-w-xs truncate">{{ release.notes || '—' }}</td>
         <td>
           <p-tag
             [value]="release.status"
             [severity]="statusSeverity(release.status)">
           </p-tag>
         </td>
+        <td class="text-sm font-mono">{{ release.filename || '—' }}</td>
+        <td class="text-sm text-muted-color">{{ formatBytes(release.size) }}</td>
+        <td class="text-sm text-muted-color">{{ release.createdAt | date:'M/d/yy, h:mm a' }}</td>
         <td>
-          @if (release.file_name) {
-            <span class="text-sm">
-              {{ release.file_name }}
-              <span class="text-muted-color ml-1">({{ formatBytes(release.file_size) }})</span>
-            </span>
-          } @else {
-            <span class="text-muted-color text-sm">No file</span>
-          }
-        </td>
-        <td class="text-sm text-muted-color">{{ release.created_at | date:'M/d/yy, h:mm a' }}</td>
-        <td>
-          <div class="flex gap-2">
+          @if (release.status !== 'archived') {
             <p-button
-              icon="pi pi-upload"
+              icon="pi pi-archive"
               [text]="true"
               [rounded]="true"
               size="small"
-              severity="secondary"
-              (onClick)="openUploadDialog(release)"
-              title="Upload installer">
+              severity="warn"
+              (onClick)="archiveRelease(release)"
+              title="Archive">
             </p-button>
-            @if (release.status === 'draft' && release.file_name) {
-              <p-button
-                icon="pi pi-send"
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                severity="success"
-                (onClick)="publishRelease(release)"
-                title="Publish">
-              </p-button>
-            }
-            @if (release.status === 'published') {
-              <p-button
-                icon="pi pi-ban"
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                severity="warn"
-                (onClick)="deprecateRelease(release)"
-                title="Deprecate">
-              </p-button>
-            }
-          </div>
+          }
         </td>
       </tr>
     </ng-template>
@@ -124,18 +93,10 @@
         class="w-full font-mono" />
     </div>
     <div class="flex flex-col gap-1">
-      <label class="font-medium text-sm">Release Name <span class="text-red-500">*</span></label>
-      <input
-        pInputText
-        [(ngModel)]="newRelease.name"
-        placeholder="e.g. Stability Update"
-        class="w-full" />
-    </div>
-    <div class="flex flex-col gap-1">
-      <label class="font-medium text-sm">Description</label>
+      <label class="font-medium text-sm">Release Notes</label>
       <textarea
         pTextarea
-        [(ngModel)]="newRelease.description"
+        [(ngModel)]="newRelease.notes"
         placeholder="Release notes or change summary..."
         [rows]="4"
         class="w-full">
@@ -145,6 +106,7 @@
       <label class="font-medium text-sm">Installer File</label>
       <input
         type="file"
+        accept=".exe"
         (change)="onNewReleaseFileSelected($event)"
         class="block w-full text-sm text-muted-color file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer" />
       @if (newReleaseFile) {
@@ -163,52 +125,8 @@
       label="Create Release"
       icon="pi pi-check"
       [loading]="saving"
-      [disabled]="!newRelease.version || !newRelease.name"
+      [disabled]="!newRelease.version"
       (onClick)="createRelease()">
-    </p-button>
-  </ng-template>
-</p-dialog>
-
-<!-- Upload Installer Dialog -->
-<p-dialog
-  [(visible)]="uploadDialogVisible"
-  [header]="'Upload Installer — v' + (selectedRelease?.version ?? '')"
-  [modal]="true"
-  [style]="{'width': '440px'}"
-  [resizable]="false"
-  [draggable]="false">
-  <div class="flex flex-col gap-4 py-2">
-    @if (selectedRelease?.file_name) {
-      <div class="p-3 rounded-lg bg-surface-100 text-sm">
-        <span class="font-medium">Current file:</span>
-        {{ selectedRelease!.file_name }}
-        <span class="text-muted-color">({{ formatBytes(selectedRelease!.file_size) }})</span>
-      </div>
-    }
-    <div class="flex flex-col gap-1">
-      <label class="font-medium text-sm">Installer File</label>
-      <input
-        type="file"
-        (change)="onFileSelected($event)"
-        class="block w-full text-sm text-muted-color file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer" />
-      @if (selectedFile) {
-        <span class="text-sm text-muted-color">{{ selectedFile.name }} ({{ formatBytes(selectedFile.size) }})</span>
-      }
-    </div>
-  </div>
-  <ng-template pTemplate="footer">
-    <p-button
-      label="Cancel"
-      severity="secondary"
-      [text]="true"
-      (onClick)="uploadDialogVisible = false">
-    </p-button>
-    <p-button
-      label="Upload"
-      icon="pi pi-upload"
-      [loading]="uploading"
-      [disabled]="!selectedFile"
-      (onClick)="uploadInstaller()">
     </p-button>
   </ng-template>
 </p-dialog>
