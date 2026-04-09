@@ -34,8 +34,11 @@ export class AppComponent implements OnInit, OnDestroy {
   auth0Id: string = '';
   unreadCount: number = 0;
   notifications: AppNotification[] = [];
+  isAdmin: boolean = false;
+
   private unreadSub?: Subscription;
   private notificationsSub?: Subscription;
+  private appUserSub?: Subscription;
 
   @ViewChild('profileMenu') profileMenu!: Menu;
   @ViewChild('notificationPanel') notificationPanel!: Popover;
@@ -63,6 +66,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
         this.auth0Id = auth0User.sub ?? '';
 
+        // Fetch full user profile from backend (includes role)
+        if (auth0User.email) {
+          this.userService.fetchAppUser(auth0User.email).subscribe();
+        }
+
         // Connect to WebSocket when authenticated
         this.tenantService.getTenantById(1001).subscribe({
           next: (tenant) => {
@@ -80,6 +88,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.userService.currentUser.subscribe(() => {
       this.userInitials = this.userService.getInitials();
+    });
+
+    this.appUserSub = this.userService.appUser$.subscribe(appUser => {
+      this.isAdmin = appUser?.role === 'admin';
     });
 
     this.unreadSub = this.notificationService.unreadCount$.subscribe(count => {
@@ -118,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unreadSub?.unsubscribe();
     this.notificationsSub?.unsubscribe();
+    this.appUserSub?.unsubscribe();
   }
 
   toggleProfileMenu(event: Event) {
@@ -172,5 +185,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToHome() {
     this.router.navigate(['/']);
+  }
+
+  navigateToAdmin() {
+    this.router.navigate(['/admin']);
   }
 }
