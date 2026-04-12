@@ -29,6 +29,14 @@
             (onClick)="navigateToSettings()"
             aria-label="Settings">
           </p-button>
+          <p-button
+            icon="pi pi-chart-bar"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            (onClick)="navigateToReports()"
+            aria-label="Reports">
+          </p-button>
           @if (isAdmin) {
             <p-button
               icon="pi pi-shield"

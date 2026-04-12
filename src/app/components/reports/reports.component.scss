@@ -1,0 +1,17 @@
+::ng-deep .p-datatable-sm .p-datatable-tbody > tr > td,
+::ng-deep .p-datatable-sm .p-datatable-thead > tr > th {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+::ng-deep .report-row:hover > td {
+  background-color: var(--p-surface-100) !important;
+}
+
+::ng-deep .report-row > td[style*="sticky"] {
+  background-color: var(--p-surface-0);
+}
+
+::ng-deep .report-row:hover > td[style*="sticky"] {
+  background-color: var(--p-surface-100) !important;
+}

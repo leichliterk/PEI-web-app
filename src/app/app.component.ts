@@ -190,4 +190,8 @@ export class AppComponent implements OnInit, OnDestroy {
   navigateToAdmin() {
     this.router.navigate(['/admin']);
   }
+
+  navigateToReports() {
+    this.router.navigate(['/reports']);
+  }
 }
