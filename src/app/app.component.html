@@ -46,6 +46,19 @@
               (onClick)="navigateToAdmin()"
               aria-label="Administration">
             </p-button>
+            <div class="relative" style="width:40px;height:40px;">
+              <p-button
+                icon="pi pi-map-marker"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                (onClick)="navigateToSiteManagement()"
+                aria-label="Site Management">
+              </p-button>
+              <i class="pi pi-cog absolute"
+                 style="font-size:0.55rem; bottom:6px; right:4px; pointer-events:none; color: var(--p-text-color)">
+              </i>
+            </div>
           }
           <!-- Notification Bell -->
           <div class="relative">
