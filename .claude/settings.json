@@ -7,7 +7,11 @@
       "mcp__coordinator__event_poll",
       "mcp__coordinator__contract_list",
       "mcp__coordinator__task_update",
-      "mcp__coordinator__contract_get"
+      "mcp__coordinator__contract_get",
+      "mcp__coordinator__task_get",
+      "mcp__coordinator__event_history",
+      "mcp__coordinator__blackboard_list",
+      "mcp__coordinator__blackboard_get"
     ]
   }
 }
