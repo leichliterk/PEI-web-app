@@ -1,0 +1,97 @@
+<p-toast></p-toast>
+
+<div class="px-4 py-8">
+<div class="w-[1400px] mx-auto">
+
+  <div class="mb-6">
+    <h2 class="text-2xl font-semibold m-0">Daily Destruction Credits</h2>
+    <p class="text-muted-color mt-1 mb-0">Net MT CH&#8324; destroyed per site per day</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex items-end gap-4 mb-6">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">Start Date</label>
+      <p-datepicker
+        [(ngModel)]="startDate"
+        [showIcon]="true"
+        dateFormat="mm/dd/yy"
+        [maxDate]="endDate">
+      </p-datepicker>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">End Date</label>
+      <p-datepicker
+        [(ngModel)]="endDate"
+        [showIcon]="true"
+        dateFormat="mm/dd/yy"
+        [minDate]="startDate">
+      </p-datepicker>
+    </div>
+    <p-button
+      label="Run Report"
+      icon="pi pi-play"
+      [loading]="loading"
+      [disabled]="!startDate || !endDate"
+      (onClick)="runReport()">
+    </p-button>
+  </div>
+
+  <!-- Table -->
+  @if (hasRun) {
+    <p-table
+      [value]="rows"
+      [loading]="loading"
+      size="small"
+      [scrollable]="true"
+      [tableStyle]="{'min-width': '100%'}">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="font-semibold" style="min-width: 120px; position: sticky; left: 0; z-index: 1;">Date</th>
+          @for (site of sites; track site.site_id) {
+            <th class="text-right" style="min-width: 130px">{{ site.name }}</th>
+          }
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-row>
+        <tr class="report-row">
+          <td class="font-mono text-sm" style="position: sticky; left: 0;">{{ row.date }}</td>
+          @for (site of sites; track site.site_id) {
+            <td class="text-right font-mono text-sm">
+              @if (row[site.site_id] != null) {
+                {{ row[site.site_id] | number:'1.4-4' }}
+              } @else {
+                <span class="text-muted-color">—</span>
+              }
+            </td>
+          }
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="empty">
+        @if (!loading) {
+          <tr>
+            <td [attr.colspan]="sites.length + 1" class="text-center py-8 text-muted-color">
+              No data for the selected date range.
+            </td>
+          </tr>
+        }
+      </ng-template>
+    </p-table>
+
+    <!-- Constants panel -->
+    @if (constants && rows.length > 0) {
+      <div class="mt-6 p-4 rounded-lg bg-surface-100 text-sm flex gap-8">
+        <span class="text-muted-color font-medium">Constants used:</span>
+        <span><span class="font-medium">T</span> = {{ constants.T }} min</span>
+        <span><span class="font-medium">DE</span> = {{ constants.DE }}%</span>
+        <span><span class="font-medium">CF</span> = {{ constants.CF }}</span>
+        <span><span class="font-medium">PEMDF</span> = {{ constants.PEMDF }}</span>
+      </div>
+    }
+  }
+
+</div>
+</div>
