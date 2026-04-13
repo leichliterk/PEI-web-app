@@ -191,6 +191,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.navigate(['/admin']);
   }
 
+  navigateToSiteManagement() {
+    this.router.navigate(['/site-management']);
+  }
+
   navigateToReports() {
     this.router.navigate(['/reports']);
   }

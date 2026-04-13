@@ -19,6 +19,17 @@ export interface WsNotification {
   created_at: string;
 }
 
+export interface ServiceStatus {
+  state: 'running' | 'stopped' | 'unknown';
+  updatedAt?: string | null;
+}
+
+export interface FtpStatus {
+  paused: boolean;
+  queueDepth: number;
+  updatedAt?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -27,12 +38,16 @@ export class WebSocketService implements OnDestroy {
   private siteStatusSubject = new Subject<SiteStatusUpdate>();
   private notificationSubject = new Subject<WsNotification>();
   private siteDataSubject = new Subject<SiteDataReading>();
+  private serviceStatusSubject = new Subject<ServiceStatus>();
+  private ftpStatusSubject = new Subject<FtpStatus>();
   private tenantId: number | null = null;
   private auth0Id: string | null = null;
 
   siteStatus$: Observable<SiteStatusUpdate> = this.siteStatusSubject.asObservable();
   notification$: Observable<WsNotification> = this.notificationSubject.asObservable();
   siteData$: Observable<SiteDataReading> = this.siteDataSubject.asObservable();
+  serviceStatus$: Observable<ServiceStatus> = this.serviceStatusSubject.asObservable();
+  ftpStatus$: Observable<FtpStatus> = this.ftpStatusSubject.asObservable();
 
   constructor(private ngZone: NgZone) {}
 
@@ -43,7 +58,6 @@ export class WebSocketService implements OnDestroy {
 
     this.tenantId = tenantId;
 
-    // Run socket creation outside Angular zone to avoid triggering change detection on internal events
     this.ngZone.runOutsideAngular(() => {
       this.socket = io(`${environment.WS_SERVER}/api/data/web`, {
         transports: ['websocket'],
@@ -81,6 +95,18 @@ export class WebSocketService implements OnDestroy {
         });
       });
 
+      this.socket.on('service:status', (data: ServiceStatus) => {
+        this.ngZone.run(() => {
+          this.serviceStatusSubject.next(data);
+        });
+      });
+
+      this.socket.on('ftp:status', (data: FtpStatus) => {
+        this.ngZone.run(() => {
+          this.ftpStatusSubject.next(data);
+        });
+      });
+
       this.socket.on('connect_error', (error: Error) => {
         console.error('Socket.IO connection error:', error);
       });
@@ -92,6 +118,14 @@ export class WebSocketService implements OnDestroy {
     if (this.socket?.connected) {
       this.emitIdentify(auth0Id);
     }
+  }
+
+  joinRoom(room: string): void {
+    this.socket?.emit('join_room', { room });
+  }
+
+  leaveRoom(room: string): void {
+    this.socket?.emit('leave_room', { room });
   }
 
   private emitIdentify(auth0Id: string): void {
@@ -120,5 +154,7 @@ export class WebSocketService implements OnDestroy {
     this.siteStatusSubject.complete();
     this.notificationSubject.complete();
     this.siteDataSubject.complete();
+    this.serviceStatusSubject.complete();
+    this.ftpStatusSubject.complete();
   }
 }
