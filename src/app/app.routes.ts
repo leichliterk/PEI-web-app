@@ -4,6 +4,7 @@ import { HomeComponent } from './components/home/home.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { AdminComponent } from './components/admin/admin.component';
 import { ReportsComponent } from './components/reports/reports.component';
+import { ScadaComponent } from './components/scada/scada.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { SiteManagementComponent } from './components/site-management/site-management.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
   { path: 'reports', component: ReportsComponent, canActivate: [authGuard] },
+  { path: 'scada', component: ScadaComponent, canActivate: [authGuard] },
   { path: 'site-management', component: SiteManagementComponent, canActivate: [adminGuard] },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];

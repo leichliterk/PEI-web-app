@@ -30,6 +30,27 @@ export interface FtpStatus {
   updatedAt?: string | null;
 }
 
+export interface TagReading {
+  name: string;
+  value: number | boolean | string | null;
+  error: string | null;
+}
+
+export interface PlcSnapshot {
+  timestamp: string;
+  tags: TagReading[];
+}
+
+export interface DiscoveredTag {
+  name: string;
+  typeCode: string;
+  dimensions: number[];
+  scope: string;
+  displayType: string;
+  isArray: boolean;
+  isPollingSupported: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,6 +61,8 @@ export class WebSocketService implements OnDestroy {
   private siteDataSubject = new Subject<SiteDataReading>();
   private serviceStatusSubject = new Subject<ServiceStatus>();
   private ftpStatusSubject = new Subject<FtpStatus>();
+  private plcSnapshotSubject = new Subject<PlcSnapshot>();
+  private plcTagsSubject = new Subject<DiscoveredTag[]>();
   private tenantId: number | null = null;
   private auth0Id: string | null = null;
 
@@ -48,6 +71,8 @@ export class WebSocketService implements OnDestroy {
   siteData$: Observable<SiteDataReading> = this.siteDataSubject.asObservable();
   serviceStatus$: Observable<ServiceStatus> = this.serviceStatusSubject.asObservable();
   ftpStatus$: Observable<FtpStatus> = this.ftpStatusSubject.asObservable();
+  plcSnapshot$: Observable<PlcSnapshot> = this.plcSnapshotSubject.asObservable();
+  plcTags$: Observable<DiscoveredTag[]> = this.plcTagsSubject.asObservable();
 
   constructor(private ngZone: NgZone) {}
 
@@ -74,37 +99,31 @@ export class WebSocketService implements OnDestroy {
       });
 
       this.socket.on('site_status_update', (data: SiteStatusUpdate) => {
-        this.ngZone.run(() => {
-          this.siteStatusSubject.next({
-            site_id: data.site_id,
-            connection_status: data.connection_status,
-            last_seen: data.last_seen
-          });
-        });
+        this.ngZone.run(() => this.siteStatusSubject.next(data));
       });
 
       this.socket.on('notification', (data: WsNotification) => {
-        this.ngZone.run(() => {
-          this.notificationSubject.next(data);
-        });
+        this.ngZone.run(() => this.notificationSubject.next(data));
       });
 
       this.socket.on('site_data', (data: SiteDataReading) => {
-        this.ngZone.run(() => {
-          this.siteDataSubject.next(data);
-        });
+        this.ngZone.run(() => this.siteDataSubject.next(data));
       });
 
       this.socket.on('service:status', (data: ServiceStatus) => {
-        this.ngZone.run(() => {
-          this.serviceStatusSubject.next(data);
-        });
+        this.ngZone.run(() => this.serviceStatusSubject.next(data));
       });
 
       this.socket.on('ftp:status', (data: FtpStatus) => {
-        this.ngZone.run(() => {
-          this.ftpStatusSubject.next(data);
-        });
+        this.ngZone.run(() => this.ftpStatusSubject.next(data));
+      });
+
+      this.socket.on('plc:snapshot', (data: PlcSnapshot) => {
+        this.ngZone.run(() => this.plcSnapshotSubject.next(data));
+      });
+
+      this.socket.on('plc:tags', (data: DiscoveredTag[]) => {
+        this.ngZone.run(() => this.plcTagsSubject.next(data));
       });
 
       this.socket.on('connect_error', (error: Error) => {
@@ -156,5 +175,7 @@ export class WebSocketService implements OnDestroy {
     this.siteDataSubject.complete();
     this.serviceStatusSubject.complete();
     this.ftpStatusSubject.complete();
+    this.plcSnapshotSubject.complete();
+    this.plcTagsSubject.complete();
   }
 }

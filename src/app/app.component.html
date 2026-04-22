@@ -37,6 +37,14 @@
             (onClick)="navigateToReports()"
             aria-label="Reports">
           </p-button>
+          <p-button
+            icon="pi pi-desktop"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            (onClick)="navigateToScada()"
+            aria-label="SCADA">
+          </p-button>
           @if (isAdmin) {
             <p-button
               icon="pi pi-shield"
