@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Site, SiteDataReading, SiteService } from '../../services/site.service';
+import { PlcSnapshot } from '../../services/websocket.service';
 import { SiteCardComponent } from '../site-card/site-card.component';
 import { CommonModule } from '@angular/common';
 import { TenantService, Tenant, TenantSite } from '../../services/tenant.service';
@@ -29,6 +30,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   tenant: undefined | Tenant;
   sites: Site[] = [];
+  private joinedRooms: string[] = [];
   layout: 'grid' | 'list' = 'grid';
   sortBy: 'name' | 'site_id' = 'name';
   sortMenuItems: MenuItem[] = [
@@ -42,6 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.sortMenuItems[1].icon = value === 'site_id' ? 'pi pi-check' : 'pi pi-fw';
   }
   readings: { [site_id: number]: SiteDataReading } = {};
+  plcSnapshots: { [site_id: number]: PlcSnapshot } = {};
 
   get sortedSites(): Site[] {
     return [...this.sites].sort((a, b) =>
@@ -52,6 +55,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   private wsSubscription?: Subscription;
   private siteDataSubscription?: Subscription;
+  private plcSnapshotSubscription?: Subscription;
 
   constructor(
     private tenantService: TenantService,
@@ -81,6 +85,11 @@ export class HomeComponent implements OnInit, OnDestroy {
           }
         });
 
+        this.joinedRooms = t.sites.map(s => `site:${t.tenant_id}:${s.site_id}`);
+        for (const room of this.joinedRooms) {
+          this.webSocketService.joinRoom(room);
+        }
+
         this.wsSubscription = this.webSocketService.siteStatus$.subscribe(update => {
           this.sites = this.sites.map(site =>
             site.site_id === update.site_id
@@ -97,11 +106,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.siteDataSubscription = this.webSocketService.siteData$.subscribe(reading => {
       this.readings = { ...this.readings, [reading.site_id]: reading };
     });
+
+    this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
+      this.plcSnapshots = { ...this.plcSnapshots, [snapshot.site_id]: snapshot };
+    });
   }
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
     this.siteDataSubscription?.unsubscribe();
+    this.plcSnapshotSubscription?.unsubscribe();
+    for (const room of this.joinedRooms) {
+      this.webSocketService.leaveRoom(room);
+    }
   }
 
   private mapConnectionStatus(status?: boolean): 'online' | 'warning' | 'offline' {

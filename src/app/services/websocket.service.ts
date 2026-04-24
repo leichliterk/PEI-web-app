@@ -37,6 +37,8 @@ export interface TagReading {
 }
 
 export interface PlcSnapshot {
+  tenant_id: number;
+  site_id: number;
   timestamp: string;
   tags: TagReading[];
 }
