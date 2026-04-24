@@ -30,7 +30,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   tenant: undefined | Tenant;
   sites: Site[] = [];
-  private joinedRooms: string[] = [];
+  private subscribedSites: { tenantId: number; siteId: number }[] = [];
   layout: 'grid' | 'list' = 'grid';
   sortBy: 'name' | 'site_id' = 'name';
   sortMenuItems: MenuItem[] = [
@@ -85,9 +85,9 @@ export class HomeComponent implements OnInit, OnDestroy {
           }
         });
 
-        this.joinedRooms = t.sites.map(s => `site:${t.tenant_id}:${s.site_id}`);
-        for (const room of this.joinedRooms) {
-          this.webSocketService.joinRoom(room);
+        this.subscribedSites = t.sites.map(s => ({ tenantId: t.tenant_id, siteId: s.site_id }));
+        for (const { tenantId, siteId } of this.subscribedSites) {
+          this.webSocketService.subscribeSite(tenantId, siteId);
         }
 
         this.wsSubscription = this.webSocketService.siteStatus$.subscribe(update => {
@@ -108,6 +108,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
 
     this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
+      console.log('[home] plc:snapshot received', snapshot.site_id, snapshot.tags);
       this.plcSnapshots = { ...this.plcSnapshots, [snapshot.site_id]: snapshot };
     });
   }
@@ -116,8 +117,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.wsSubscription?.unsubscribe();
     this.siteDataSubscription?.unsubscribe();
     this.plcSnapshotSubscription?.unsubscribe();
-    for (const room of this.joinedRooms) {
-      this.webSocketService.leaveRoom(room);
+    for (const { tenantId, siteId } of this.subscribedSites) {
+      this.webSocketService.unsubscribeSite(tenantId, siteId);
     }
   }
 

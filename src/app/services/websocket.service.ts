@@ -141,6 +141,14 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
+  subscribeSite(tenantId: number, siteId: number): void {
+    this.socket?.emit('subscribe_site', { tenant_id: tenantId, site_id: siteId });
+  }
+
+  unsubscribeSite(tenantId: number, siteId: number): void {
+    this.socket?.emit('unsubscribe_site', { tenant_id: tenantId, site_id: siteId });
+  }
+
   joinRoom(room: string): void {
     this.socket?.emit('join_room', { room });
   }
