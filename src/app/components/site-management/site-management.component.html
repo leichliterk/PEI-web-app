@@ -1,152 +1,69 @@
 <p-toast></p-toast>
 
 <div class="px-4 py-8">
-<div class="w-[1200px] mx-auto">
+  <div class="w-[1200px] mx-auto">
 
-  <div class="mb-6">
-    <h2 class="text-2xl font-semibold m-0">Site Management</h2>
-    <p class="text-muted-color mt-1 mb-0">Control site services and FTP operations</p>
-  </div>
-
-  <!-- Site selector -->
-  <div class="mb-6" style="max-width: 320px">
-    <label class="text-sm font-medium block mb-1">Select Site</label>
-    <p-select
-      [(ngModel)]="selectedSiteId"
-      [options]="sites"
-      optionLabel="name"
-      optionValue="site_id"
-      placeholder="Choose a site..."
-      [style]="{'width': '100%'}"
-      (onChange)="onSiteSelected()">
-    </p-select>
-  </div>
-
-  <!-- Loading spinner -->
-  @if (statusLoading) {
-    <div class="flex justify-center py-12">
-      <p-progressSpinner strokeWidth="4" style="width:48px;height:48px"></p-progressSpinner>
-    </div>
-  }
-
-  @if (siteStatus && !statusLoading) {
-
-    <!-- Not connected warning -->
-    @if (!siteStatus.connected) {
-      <div class="flex items-center gap-3 p-4 mb-6 rounded-lg border border-yellow-500/40 bg-yellow-500/10">
-        <i class="pi pi-exclamation-triangle text-yellow-400 text-xl"></i>
-        <span class="font-medium text-yellow-300">Site is not connected — commands are disabled</span>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold m-0">Site Management</h2>
+        <p class="text-muted-color mt-1 mb-0">Control site services and FTP operations</p>
       </div>
+      <div class="flex items-center gap-2">
+        <p-button
+          icon="pi pi-th-large"
+          [text]="true"
+          [rounded]="true"
+          [severity]="layout === 'grid' ? 'primary' : 'secondary'"
+          (onClick)="layout = 'grid'"
+          pTooltip="Grid view">
+        </p-button>
+        <p-button
+          icon="pi pi-bars"
+          [text]="true"
+          [rounded]="true"
+          [severity]="layout === 'list' ? 'primary' : 'secondary'"
+          (onClick)="layout = 'list'"
+          pTooltip="List view">
+        </p-button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="flex justify-center items-center py-12">
+        <p-progressSpinner strokeWidth="4" animationDuration="1s"></p-progressSpinner>
+      </div>
+    } @else {
+      @if (layout === 'grid') {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (site of sites; track site.site_id) {
+            <app-site-mgmt-card
+              [site]="site"
+              [siteStatus]="serviceStatuses[site.site_id]"
+              [latestOtaVersion]="latestOtaVersion"
+              [restartLoading]="restartLoadingSites.has(site.site_id)"
+              [installLoading]="installLoadingSites.has(site.site_id)"
+              (restartService)="onRestartService($event)"
+              (installOta)="onInstallOta($event)">
+            </app-site-mgmt-card>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col gap-2">
+          @for (site of sites; track site.site_id) {
+            <app-site-mgmt-card
+              class="w-full"
+              [site]="site"
+              [siteStatus]="serviceStatuses[site.site_id]"
+              [latestOtaVersion]="latestOtaVersion"
+              [restartLoading]="restartLoadingSites.has(site.site_id)"
+              [installLoading]="installLoadingSites.has(site.site_id)"
+              (restartService)="onRestartService($event)"
+              (installOta)="onInstallOta($event)">
+            </app-site-mgmt-card>
+          }
+        </div>
+      }
     }
 
-    <div class="grid grid-cols-2 gap-6">
-
-      <!-- Service Control -->
-      <p-card header="Windows Service">
-        <div class="flex flex-col gap-4">
-          <!-- Status indicator -->
-          <div class="flex items-center gap-3">
-            <span class="w-3 h-3 rounded-full flex-shrink-0"
-              [class.bg-green-500]="siteStatus.service.state === 'running'"
-              [class.bg-red-500]="siteStatus.service.state === 'stopped'"
-              [class.bg-gray-400]="siteStatus.service.state === 'unknown'">
-            </span>
-            <span class="font-medium capitalize">{{ siteStatus.service.state }}</span>
-            @if (siteStatus.service.updatedAt) {
-              <span class="text-xs text-muted-color ml-auto">{{ siteStatus.service.updatedAt | date:'M/d, h:mm a' }}</span>
-            }
-          </div>
-
-          <!-- Action buttons -->
-          <div class="flex gap-2 flex-wrap">
-            @if (siteStatus.service.state === 'stopped' || siteStatus.service.state === 'unknown') {
-              <p-button
-                label="Start"
-                icon="pi pi-play"
-                severity="success"
-                size="small"
-                [loading]="serviceActionLoading === 'start'"
-                [disabled]="!siteStatus.connected || serviceActionLoading !== null"
-                (onClick)="sendServiceCommand('start')">
-              </p-button>
-            }
-            @if (siteStatus.service.state === 'running' || siteStatus.service.state === 'unknown') {
-              <p-button
-                label="Restart"
-                icon="pi pi-refresh"
-                severity="warn"
-                size="small"
-                [loading]="serviceActionLoading === 'restart'"
-                [disabled]="!siteStatus.connected || serviceActionLoading !== null"
-                (onClick)="sendServiceCommand('restart')">
-              </p-button>
-              <p-button
-                label="Stop"
-                icon="pi pi-stop"
-                severity="danger"
-                size="small"
-                [loading]="serviceActionLoading === 'stop'"
-                [disabled]="!siteStatus.connected || serviceActionLoading !== null"
-                (onClick)="sendServiceCommand('stop')">
-              </p-button>
-            }
-          </div>
-        </div>
-      </p-card>
-
-      <!-- FTP Control -->
-      <p-card header="FTP Uploads">
-        <div class="flex flex-col gap-4">
-          <!-- Status -->
-          <div class="flex items-center gap-3">
-            <span class="w-3 h-3 rounded-full flex-shrink-0"
-              [class.bg-green-500]="!siteStatus.ftp.paused"
-              [class.bg-yellow-400]="siteStatus.ftp.paused">
-            </span>
-            <span class="font-medium">FTP Uploads: {{ siteStatus.ftp.paused ? 'Paused' : 'Active' }}</span>
-          </div>
-          <div class="text-sm text-muted-color">
-            {{ siteStatus.ftp.queueDepth }} file{{ siteStatus.ftp.queueDepth !== 1 ? 's' : '' }} pending
-          </div>
-
-          <!-- Action buttons -->
-          <div class="flex gap-2 flex-wrap">
-            @if (!siteStatus.ftp.paused) {
-              <p-button
-                label="Pause FTP"
-                icon="pi pi-pause"
-                severity="warn"
-                size="small"
-                [loading]="ftpActionLoading === 'pause'"
-                [disabled]="!siteStatus.connected || ftpActionLoading !== null"
-                (onClick)="sendFtpCommand('pause')">
-              </p-button>
-            } @else {
-              <p-button
-                label="Resume FTP"
-                icon="pi pi-play"
-                severity="success"
-                size="small"
-                [loading]="ftpActionLoading === 'resume'"
-                [disabled]="!siteStatus.connected || ftpActionLoading !== null"
-                (onClick)="sendFtpCommand('resume')">
-              </p-button>
-            }
-            <p-button
-              label="Trigger Full Upload"
-              icon="pi pi-upload"
-              severity="secondary"
-              size="small"
-              [loading]="ftpActionLoading === 'full-upload'"
-              [disabled]="!siteStatus.connected || ftpActionLoading !== null"
-              (onClick)="sendFtpCommand('full-upload')">
-            </p-button>
-          </div>
-        </div>
-      </p-card>
-
-    </div>
-  }
-
-</div>
+  </div>
 </div>
