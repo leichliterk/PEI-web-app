@@ -71,6 +71,7 @@ export class WebSocketService implements OnDestroy {
   private plcTagsSubject = new Subject<DiscoveredTag[]>();
   private tenantId: number | null = null;
   private auth0Id: string | null = null;
+  private siteSubCounts = new Map<string, number>();
 
   siteStatus$: Observable<SiteStatusUpdate> = this.siteStatusSubject.asObservable();
   notification$: Observable<WsNotification> = this.notificationSubject.asObservable();
@@ -101,6 +102,11 @@ export class WebSocketService implements OnDestroy {
         this.subscribeTenant(tenantId);
         if (this.auth0Id) {
           this.emitIdentify(this.auth0Id);
+        }
+        // Re-join any active site rooms after reconnect
+        for (const key of this.siteSubCounts.keys()) {
+          const [tid, sid] = key.split(':').map(Number);
+          this.socket?.emit('subscribe_site', { tenant_id: tid, site_id: sid });
         }
       });
 
@@ -146,11 +152,23 @@ export class WebSocketService implements OnDestroy {
   }
 
   subscribeSite(tenantId: number, siteId: number): void {
-    this.socket?.emit('subscribe_site', { tenant_id: tenantId, site_id: siteId });
+    const key = `${tenantId}:${siteId}`;
+    const count = this.siteSubCounts.get(key) ?? 0;
+    this.siteSubCounts.set(key, count + 1);
+    if (count === 0) {
+      this.socket?.emit('subscribe_site', { tenant_id: tenantId, site_id: siteId });
+    }
   }
 
   unsubscribeSite(tenantId: number, siteId: number): void {
-    this.socket?.emit('unsubscribe_site', { tenant_id: tenantId, site_id: siteId });
+    const key = `${tenantId}:${siteId}`;
+    const count = (this.siteSubCounts.get(key) ?? 1) - 1;
+    if (count <= 0) {
+      this.siteSubCounts.delete(key);
+      this.socket?.emit('unsubscribe_site', { tenant_id: tenantId, site_id: siteId });
+    } else {
+      this.siteSubCounts.set(key, count);
+    }
   }
 
   joinRoom(room: string): void {
