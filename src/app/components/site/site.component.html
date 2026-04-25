@@ -14,18 +14,25 @@
     </div>
   } @else if (siteData) {
     <div class="w-full min-w-[50vw]">
-      <p-card [class.flare-alert]="reading?.flr_flow === 0">
+      <p-card [class.flare-alert]="!offline && flareStatus === 'shutdown'">
         <ng-template pTemplate="header">
           <div class="flex justify-between items-center p-6">
             <div>
               <h1 class="text-3xl font-bold m-0">{{ siteData.name }}</h1>
               <p class="text-muted-color mt-2">Site ID: {{ siteData.site_id }}</p>
             </div>
-            <p-badge
-              [severity]="reading?.flr_flow === 0 ? 'danger' : (siteData.connection_status === 'online' ? 'success' : (siteData.connection_status === 'warning' ? 'warn' : 'danger'))"
-              [value]="reading?.flr_flow === 0 ? 'SHUTDOWN' : (siteData.connection_status === 'online' ? 'Online' : (siteData.connection_status === 'warning' ? 'Sus' : 'Offline'))"
-              class="text-lg">
-            </p-badge>
+            <div class="flex gap-2">
+              <p-badge
+                [severity]="offline ? 'secondary' : 'success'"
+                [value]="offline ? 'Offline' : 'Online'"
+                class="text-lg">
+              </p-badge>
+              <p-badge
+                [severity]="offline ? 'secondary' : (flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger'))"
+                [value]="offline ? '--' : (flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown'))"
+                class="text-lg">
+              </p-badge>
+            </div>
           </div>
         </ng-template>
       </p-card>
@@ -34,35 +41,35 @@
         <ng-template pTemplate="header">
           <div class="flex justify-between items-center p-4 pb-0">
             <h2 class="text-xl font-semibold m-0">Latest Reading</h2>
-            <span class="text-sm text-muted-color">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d/yy h:mm:ss a') : '--' }}</span>
+            <span class="text-sm text-muted-color">{{ lastTimestamp ? (lastTimestamp | date:'M/d/yy h:mm:ss a') : '--' }}</span>
           </div>
         </ng-template>
         <div class="grid grid-cols-3 gap-6 py-2 text-center">
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">Flr Flow</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.flr_flow?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
+            <p class="text-lg font-semibold m-0">{{ !offline && flrFlow != null ? flrFlow.toFixed(1) : '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">CH4</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.ch4 != null ? reading!.ch4.toFixed(1) + '%' : '--' }}</p>
+            <p class="text-lg font-semibold m-0">{{ !offline && ch4 != null ? ch4.toFixed(1) + '%' : '--' }}</p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">MMBTU/HR</p>
-            <p class="text-lg font-semibold m-0">{{ mmBtuHr != null ? mmBtuHr.toFixed(3) : '--' }}</p>
+            <p class="text-lg font-semibold m-0">{{ !offline && mmBtuHr != null ? mmBtuHr.toFixed(3) : '--' }}</p>
           </div>
         </div>
         <div class="grid grid-cols-3 gap-6 py-2 border-t border-surface-200 text-center">
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">Inlet Pressure</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.inlet_pressure?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
+            <p class="text-lg font-semibold m-0">{{ !offline && inletPressure != null ? inletPressure.toFixed(1) : '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">O2</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.o2 != null ? reading!.o2.toFixed(1) + '%' : '--' }}</p>
+            <p class="text-lg font-semibold m-0">{{ !offline && o2 != null ? o2.toFixed(1) + '%' : '--' }}</p>
           </div>
           <div>
             <p class="text-sm text-muted-color m-0 mb-1">Flr SDV</p>
-            <p class="text-lg font-semibold m-0">{{ reading?.flr_sdv == null ? '--' : (reading!.flr_sdv === 0 ? 'Open' : 'Closed') }}</p>
+            <p class="text-lg font-semibold m-0">{{ !offline && flrSdv != null ? (flrSdv === 0 ? 'Open' : 'Closed') : '--' }}</p>
           </div>
         </div>
       </p-card>

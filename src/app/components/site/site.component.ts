@@ -11,7 +11,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { Site, SiteDataReading, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
-import { WebSocketService } from '../../services/websocket.service';
+import { PlcSnapshot, WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-site',
@@ -42,14 +42,36 @@ export class SiteComponent implements OnInit, OnDestroy {
   fileDialogTitle: string = '';
   fileDialogFiles: SiteFile[] = [];
   reading: SiteDataReading | undefined;
+  plcSnapshot: PlcSnapshot | undefined;
   private wsSubscription?: Subscription;
   private siteDataSubscription?: Subscription;
+  private plcSnapshotSubscription?: Subscription;
   private uptimeInterval?: Subscription;
 
-  get mmBtuHr(): number | null {
-    if (!this.reading) return null;
-    return (this.reading.flr_flow * 60 * 1011 * this.reading.ch4) / 100000000;
+  get offline(): boolean { return this.siteData?.connection_status !== 'online'; }
+
+  get flareStatus(): 'running' | 'alarm' | 'shutdown' {
+    if (this.reading?.flare_status) return this.reading.flare_status;
+    if (!this.reading || this.reading.flr_flow === 0) return 'shutdown';
+    return 'running';
   }
+
+  private tagValue(name: string): number | null {
+    const tag = this.plcSnapshot?.tags.find(t => t.name === name);
+    if (tag && !tag.error && typeof tag.value === 'number') return tag.value;
+    return null;
+  }
+
+  get mmBtuHr(): number | null {
+    return this.tagValue('FLR_1.MMBTU.RATE.VLU.SCL')
+      ?? (this.reading ? (this.reading.flr_flow * 60 * 1011 * this.reading.ch4) / 100000000 : null);
+  }
+  get ch4(): number | null { return this.tagValue('GHS_1.GAC.CH4.VLU.SCL') ?? this.reading?.ch4 ?? null; }
+  get o2(): number | null { return this.tagValue('GHS_1.GAC.O2.VLU.SCL') ?? this.reading?.o2 ?? null; }
+  get flrFlow(): number | null { return this.tagValue('FLR_1.Flow.Rate.VLU.SCL') ?? this.reading?.flr_flow ?? null; }
+  get inletPressure(): number | null { return this.tagValue('GHS_1.PT_301.VLU.SCL') ?? this.reading?.inlet_pressure ?? null; }
+  get flrSdv(): number | null { return this.tagValue('FLR_SDV') ?? (this.reading?.flr_sdv != null ? this.reading.flr_sdv : null); }
+  get lastTimestamp(): string | null { return this.plcSnapshot?.timestamp ?? this.reading?.timestamp ?? null; }
 
   constructor(
     private route: ActivatedRoute,
@@ -87,7 +109,9 @@ export class SiteComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
     this.siteDataSubscription?.unsubscribe();
+    this.plcSnapshotSubscription?.unsubscribe();
     this.uptimeInterval?.unsubscribe();
+    if (this.siteId) this.webSocketService.unsubscribeSite(1001, this.siteId);
   }
 
   private loadLatestReading(): void {
@@ -99,9 +123,15 @@ export class SiteComponent implements OnInit, OnDestroy {
     });
 
     this.siteDataSubscription = this.webSocketService.siteData$.subscribe(r => {
-      if (r.site_id === this.siteId) {
-        this.reading = r;
-      }
+      if (r.site_id === this.siteId) this.reading = r;
+    });
+
+    if (this.siteId) {
+      this.webSocketService.subscribeSite(tenantId, this.siteId);
+    }
+
+    this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
+      if (snapshot.site_id === this.siteId) this.plcSnapshot = snapshot;
     });
   }
 

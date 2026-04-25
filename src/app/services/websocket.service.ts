@@ -33,7 +33,11 @@ export interface FtpStatus {
 export interface TagReading {
   name: string;
   value: number | boolean | string | null;
-  error: string | null;
+  error: boolean | string | null;
+  errorMessage?: string | null;
+  dataType?: string;
+  displayName?: string;
+  unit?: string | null;
 }
 
 export interface PlcSnapshot {

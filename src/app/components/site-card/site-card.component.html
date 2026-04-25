@@ -1,5 +1,5 @@
 @if (layout === 'grid') {
-  <p-card class="site-card cursor-pointer" [class.flare-alert]="reading?.flr_flow === 0" (click)="navigateToSite()">
+  <p-card class="site-card cursor-pointer" [class.flare-alert]="!offline && flareStatus === 'shutdown'" (click)="navigateToSite()">
     <ng-template pTemplate="header">
       <div class="flex justify-between items-start p-4 pb-3">
         <div>
@@ -10,16 +10,16 @@
           <div class="flex gap-2">
             <!-- Connection indicator -->
             <p-badge
-              [severity]="siteData.connection_status === 'online' ? 'success' : 'secondary'"
-              [value]="siteData.connection_status === 'online' ? 'Online' : 'Offline'">
+              [severity]="offline ? 'secondary' : 'success'"
+              [value]="offline ? 'Offline' : 'Online'">
             </p-badge>
             <!-- Flare status indicator -->
             <p-badge
-              [severity]="flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger')"
-              [value]="flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown')">
+              [severity]="offline ? 'secondary' : (flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger'))"
+              [value]="offline ? '--' : (flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown'))">
             </p-badge>
           </div>
-          <p class="text-xs text-muted-color m-0">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d h:mm a') : '--' }}</p>
+          <p class="text-xs text-muted-color m-0">{{ (plcSnapshot?.timestamp || reading?.timestamp) ? ((plcSnapshot?.timestamp || reading!.timestamp) | date:'M/d h:mm a') : '--' }}</p>
         </div>
       </div>
     </ng-template>
@@ -27,85 +27,85 @@
     <div class="flex justify-around pt-1 pb-2">
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">Flr Flow</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.flr_flow?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
+        <p class="text-sm font-semibold m-0">{{ !offline && flrFlow != null ? flrFlow.toFixed(1) : '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
       </div>
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">CH4</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.ch4 != null ? reading!.ch4.toFixed(1) + '%' : '--' }}</p>
+        <p class="text-sm font-semibold m-0">{{ !offline && ch4 != null ? ch4.toFixed(1) + '%' : '--' }}</p>
       </div>
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">MMBTU/HR</p>
-        <p class="text-sm font-semibold m-0">{{ mmBtuHr != null ? mmBtuHr.toFixed(3) : '--' }}</p>
+        <p class="text-sm font-semibold m-0">{{ !offline && mmBtuHr != null ? mmBtuHr.toFixed(3) : '--' }}</p>
       </div>
     </div>
     <!-- Row 2: Inlet Pressure | O2 | Flr SDV -->
     <div class="flex justify-around py-2 border-t border-surface-200">
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">Inlet Pressure</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.inlet_pressure?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
+        <p class="text-sm font-semibold m-0">{{ !offline && inletPressure != null ? inletPressure.toFixed(1) : '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
       </div>
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">O2</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.o2 != null ? reading!.o2.toFixed(1) + '%' : '--' }}</p>
+        <p class="text-sm font-semibold m-0">{{ !offline && o2 != null ? o2.toFixed(1) + '%' : '--' }}</p>
       </div>
       <div class="w-px bg-surface-200"></div>
       <div class="text-center">
         <p class="text-xs text-muted-color m-0 mb-1">Flr SDV</p>
-        <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv == null ? '--' : (reading!.flr_sdv === 0 ? 'Open' : 'Closed') }}</p>
+        <p class="text-sm font-semibold m-0">{{ !offline && flrSdv != null ? (flrSdv === 0 ? 'Open' : 'Closed') : '--' }}</p>
       </div>
     </div>
   </p-card>
 } @else {
-  <p-card class="site-card cursor-pointer w-full" [class.flare-alert]="reading?.flr_flow === 0" (click)="navigateToSite()">
+  <p-card class="site-card cursor-pointer w-full" [class.flare-alert]="!offline && flareStatus === 'shutdown'" (click)="navigateToSite()">
     <div class="flex justify-between items-center gap-4">
       <div class="w-[200px] shrink-0">
         <p class="text-lg font-semibold m-0">{{ siteData.name }}</p>
         <p class="text-muted-color text-sm m-0">Site ID: {{ siteData.site_id }}</p>
-        <p class="text-xs text-muted-color m-0">{{ reading?.timestamp ? (reading!.timestamp | date:'M/d h:mm a') : '--' }}</p>
+        <p class="text-xs text-muted-color m-0">{{ (plcSnapshot?.timestamp || reading?.timestamp) ? ((plcSnapshot?.timestamp || reading!.timestamp) | date:'M/d h:mm a') : '--' }}</p>
       </div>
       <!-- Row 1 metrics -->
       <div class="grid grid-cols-3 flex-1">
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Flr Flow</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.flr_flow?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
+          <p class="text-sm font-semibold m-0">{{ !offline && flrFlow != null ? flrFlow.toFixed(1) : '--' }} <span class="text-xs font-normal text-muted-color">SCFM</span></p>
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">CH4</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.ch4 != null ? reading!.ch4.toFixed(1) + '%' : '--' }}</p>
+          <p class="text-sm font-semibold m-0">{{ !offline && ch4 != null ? ch4.toFixed(1) + '%' : '--' }}</p>
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">MMBTU/HR</p>
-          <p class="text-sm font-semibold m-0">{{ mmBtuHr != null ? mmBtuHr.toFixed(3) : '--' }}</p>
+          <p class="text-sm font-semibold m-0">{{ !offline && mmBtuHr != null ? mmBtuHr.toFixed(3) : '--' }}</p>
         </div>
       </div>
       <!-- Row 2 metrics -->
       <div class="grid grid-cols-3 flex-1 border-l border-surface-200 pl-6">
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Inlet Pressure</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.inlet_pressure?.toFixed(1) ?? '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
+          <p class="text-sm font-semibold m-0">{{ !offline && inletPressure != null ? inletPressure.toFixed(1) : '--' }} <span class="text-xs font-normal text-muted-color">inH<sub>2</sub>O</span></p>
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">O2</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.o2 != null ? reading!.o2.toFixed(1) + '%' : '--' }}</p>
+          <p class="text-sm font-semibold m-0">{{ !offline && o2 != null ? o2.toFixed(1) + '%' : '--' }}</p>
         </div>
         <div>
           <p class="text-xs text-muted-color m-0 mb-1">Flr SDV</p>
-          <p class="text-sm font-semibold m-0">{{ reading?.flr_sdv == null ? '--' : (reading!.flr_sdv === 0 ? 'Open' : 'Closed') }}</p>
+          <p class="text-sm font-semibold m-0">{{ !offline && flrSdv != null ? (flrSdv === 0 ? 'Open' : 'Closed') : '--' }}</p>
         </div>
       </div>
       <div class="w-[130px] shrink-0 flex flex-col items-end gap-1">
         <!-- Connection indicator -->
         <p-badge
-          [severity]="siteData.connection_status === 'online' ? 'success' : 'secondary'"
-          [value]="siteData.connection_status === 'online' ? 'Online' : 'Offline'">
+          [severity]="offline ? 'secondary' : 'success'"
+          [value]="offline ? 'Offline' : 'Online'">
         </p-badge>
         <!-- Flare status indicator -->
         <p-badge
-          [severity]="flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger')"
-          [value]="flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown')">
+          [severity]="offline ? 'secondary' : (flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger'))"
+          [value]="offline ? '--' : (flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown'))">
         </p-badge>
       </div>
     </div>

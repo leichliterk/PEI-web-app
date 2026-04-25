@@ -108,8 +108,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
 
     this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
-      console.log('[home] plc:snapshot received', snapshot.site_id, snapshot.tags);
-      this.plcSnapshots = { ...this.plcSnapshots, [snapshot.site_id]: snapshot };
+this.plcSnapshots = { ...this.plcSnapshots, [snapshot.site_id]: snapshot };
     });
   }
 
