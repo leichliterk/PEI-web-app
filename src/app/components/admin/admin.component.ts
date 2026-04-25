@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEventType, HttpRequest } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -8,6 +8,8 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { TagModule } from 'primeng/tag';
+import { SelectModule } from 'primeng/select';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { UserService } from '../../services/user.service';
@@ -40,7 +42,9 @@ export interface OtaRelease {
     InputTextModule,
     TextareaModule,
     TagModule,
+    SelectModule,
     ToastModule,
+    ProgressBarModule,
   ],
   providers: [MessageService],
   templateUrl: './admin.component.html',
@@ -50,11 +54,30 @@ export class AdminComponent implements OnInit {
   releases: OtaRelease[] = [];
   loading = true;
 
+  // Create dialog
   createDialogVisible = false;
-
   newRelease = { version: '', notes: '' };
   newReleaseFile: File | null = null;
   saving = false;
+  uploadProgress: number | null = null;  // null = hidden, 0-100 = uploading bytes
+  uploadProcessing = false;              // true = bytes sent, server still processing
+
+  // Edit dialog
+  editDialogVisible = false;
+  editingRelease: OtaRelease | null = null;
+  editForm = { version: '', notes: '', status: '' };
+  editSaving = false;
+
+  // Delete dialog
+  deleteDialogVisible = false;
+  releaseToDelete: OtaRelease | null = null;
+  deleteInProgress = false;
+
+  readonly statusOptions = [
+    { label: 'Active', value: 'active' },
+    { label: 'Superseded', value: 'superseded' },
+    { label: 'Archived', value: 'archived' },
+  ];
 
   constructor(
     private http: HttpClient,
@@ -85,6 +108,8 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  // ── Create ──────────────────────────────────────────────────────────────────
+
   openCreateDialog(): void {
     this.newRelease = { version: '', notes: '' };
     this.newReleaseFile = null;
@@ -98,7 +123,6 @@ export class AdminComponent implements OnInit {
 
   createRelease(): void {
     if (!this.newRelease.version) return;
-    this.saving = true;
 
     const user = this.userService.appUserValue;
     if (!user) return;
@@ -112,31 +136,99 @@ export class AdminComponent implements OnInit {
       formData.append('exe', this.newReleaseFile);
     }
 
-    this.http.post<OtaRelease>(`${environment.API_SERVER}/ota/upload`, formData).subscribe({
-      next: release => {
-        this.releases = [release, ...this.releases];
-        this.createDialogVisible = false;
-        this.saving = false;
-        this.messageService.add({ severity: 'success', summary: 'Created', detail: `Release ${release.version} created` });
+    this.saving = true;
+    this.uploadProgress = 0;
+
+    const req = new HttpRequest('POST', `${environment.API_SERVER}/ota/upload`, formData, {
+      reportProgress: true
+    });
+
+    this.http.request<OtaRelease>(req).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          const pct = Math.round(100 * event.loaded / event.total);
+          if (pct >= 100) {
+            // All bytes sent — server is now processing; switch to indeterminate
+            this.uploadProgress = null;
+            this.uploadProcessing = true;
+          } else {
+            this.uploadProgress = pct;
+          }
+        } else if (event.type === HttpEventType.Response) {
+          const release = event.body!;
+          this.releases = [release, ...this.releases];
+          this.createDialogVisible = false;
+          this.saving = false;
+          this.uploadProgress = null;
+          this.uploadProcessing = false;
+          this.messageService.add({ severity: 'success', summary: 'Created', detail: `Release ${release.version} created` });
+        }
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create release' });
         this.saving = false;
+        this.uploadProgress = null;
+        this.uploadProcessing = false;
       }
     });
   }
 
-  archiveRelease(release: OtaRelease): void {
-    this.http.patch<OtaRelease>(`${environment.API_SERVER}/ota/releases/${release._id}`, { status: 'archived' }).subscribe({
+  // ── Edit ────────────────────────────────────────────────────────────────────
+
+  openEditDialog(release: OtaRelease): void {
+    this.editingRelease = release;
+    this.editForm = { version: release.version, notes: release.notes ?? '', status: release.status };
+    this.editDialogVisible = true;
+  }
+
+  saveEdit(): void {
+    if (!this.editingRelease || !this.editForm.version) return;
+    this.editSaving = true;
+
+    this.http.patch<OtaRelease>(
+      `${environment.API_SERVER}/ota/releases/${this.editingRelease._id}`,
+      { version: this.editForm.version, notes: this.editForm.notes, status: this.editForm.status }
+    ).subscribe({
       next: updated => {
         this.releases = this.releases.map(r => r._id === updated._id ? updated : r);
-        this.messageService.add({ severity: 'warn', summary: 'Archived', detail: `v${updated.version} archived` });
+        this.editDialogVisible = false;
+        this.editSaving = false;
+        this.messageService.add({ severity: 'success', summary: 'Saved', detail: `v${updated.version} updated` });
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to archive release' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update release' });
+        this.editSaving = false;
       }
     });
   }
+
+  // ── Delete ──────────────────────────────────────────────────────────────────
+
+  openDeleteDialog(release: OtaRelease): void {
+    this.releaseToDelete = release;
+    this.deleteDialogVisible = true;
+  }
+
+  confirmDelete(): void {
+    if (!this.releaseToDelete) return;
+    this.deleteInProgress = true;
+
+    this.http.delete(`${environment.API_SERVER}/ota/releases/${this.releaseToDelete._id}`).subscribe({
+      next: () => {
+        this.releases = this.releases.filter(r => r._id !== this.releaseToDelete!._id);
+        this.deleteDialogVisible = false;
+        this.deleteInProgress = false;
+        this.messageService.add({ severity: 'info', summary: 'Deleted', detail: `v${this.releaseToDelete!.version} deleted` });
+        this.releaseToDelete = null;
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete release' });
+        this.deleteInProgress = false;
+      }
+    });
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
 
   formatBytes(bytes?: number): string {
     if (!bytes) return '—';

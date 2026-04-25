@@ -48,18 +48,25 @@
         <td class="text-sm font-mono">{{ release.filename || '—' }}</td>
         <td class="text-sm text-muted-color">{{ formatBytes(release.size) }}</td>
         <td class="text-sm text-muted-color">{{ release.createdAt | date:'M/d/yy, h:mm a' }}</td>
-        <td>
-          @if (release.status !== 'archived') {
-            <p-button
-              icon="pi pi-archive"
-              [text]="true"
-              [rounded]="true"
-              size="small"
-              severity="warn"
-              (onClick)="archiveRelease(release)"
-              title="Archive">
-            </p-button>
-          }
+        <td class="whitespace-nowrap">
+          <p-button
+            icon="pi pi-pencil"
+            [text]="true"
+            [rounded]="true"
+            size="small"
+            severity="secondary"
+            (onClick)="openEditDialog(release)"
+            title="Edit">
+          </p-button>
+          <p-button
+            icon="pi pi-trash"
+            [text]="true"
+            [rounded]="true"
+            size="small"
+            severity="danger"
+            (onClick)="openDeleteDialog(release)"
+            title="Delete">
+          </p-button>
         </td>
       </tr>
     </ng-template>
@@ -115,18 +122,117 @@
     </div>
   </div>
   <ng-template pTemplate="footer">
+    @if (uploadProgress !== null) {
+      <div class="w-full px-1 py-2">
+        <div class="flex justify-between text-sm text-muted-color mb-1">
+          <span>Uploading...</span>
+          <span>{{ uploadProgress }}%</span>
+        </div>
+        <p-progressbar [value]="uploadProgress" [showValue]="false" class="h-2"></p-progressbar>
+      </div>
+    } @else if (uploadProcessing) {
+      <div class="w-full px-1 py-2">
+        <div class="text-sm text-muted-color mb-1">Processing on server...</div>
+        <p-progressbar mode="indeterminate" class="h-2"></p-progressbar>
+      </div>
+    } @else {
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        (onClick)="createDialogVisible = false">
+      </p-button>
+      <p-button
+        label="Create Release"
+        icon="pi pi-check"
+        [disabled]="!newRelease.version"
+        (onClick)="createRelease()">
+      </p-button>
+    }
+  </ng-template>
+</p-dialog>
+
+<!-- Edit Release Dialog -->
+<p-dialog
+  [(visible)]="editDialogVisible"
+  header="Edit Release"
+  [modal]="true"
+  [style]="{'width': '480px'}"
+  [resizable]="false"
+  [draggable]="false">
+  <div class="flex flex-col gap-4 py-2">
+    <div class="flex flex-col gap-1">
+      <label class="font-medium text-sm">Version <span class="text-red-500">*</span></label>
+      <input
+        pInputText
+        [(ngModel)]="editForm.version"
+        placeholder="e.g. 1.2.3"
+        class="w-full font-mono" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-medium text-sm">Release Notes</label>
+      <textarea
+        pTextarea
+        [(ngModel)]="editForm.notes"
+        placeholder="Release notes or change summary..."
+        [rows]="4"
+        class="w-full">
+      </textarea>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-medium text-sm">Status</label>
+      <p-select
+        [(ngModel)]="editForm.status"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        class="w-full">
+      </p-select>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
     <p-button
       label="Cancel"
       severity="secondary"
       [text]="true"
-      (onClick)="createDialogVisible = false">
+      (onClick)="editDialogVisible = false">
     </p-button>
     <p-button
-      label="Create Release"
+      label="Save"
       icon="pi pi-check"
-      [loading]="saving"
-      [disabled]="!newRelease.version"
-      (onClick)="createRelease()">
+      [loading]="editSaving"
+      [disabled]="!editForm.version"
+      (onClick)="saveEdit()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Delete Confirmation Dialog -->
+<p-dialog
+  [(visible)]="deleteDialogVisible"
+  header="Delete Release"
+  [modal]="true"
+  [style]="{'width': '400px'}"
+  [resizable]="false"
+  [draggable]="false">
+  <div class="py-2">
+    <p>Are you sure you want to delete release <strong class="font-mono">{{ releaseToDelete?.version }}</strong>?</p>
+    <p class="text-muted-color text-sm mt-1">This action cannot be undone.</p>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [text]="true"
+      (onClick)="deleteDialogVisible = false">
+    </p-button>
+    <p-button
+      label="Delete"
+      icon="pi pi-trash"
+      severity="danger"
+      [loading]="deleteInProgress"
+      (onClick)="confirmDelete()">
     </p-button>
   </ng-template>
 </p-dialog>
