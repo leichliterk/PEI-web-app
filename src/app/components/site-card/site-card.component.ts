@@ -37,7 +37,7 @@ export class SiteCardComponent {
   }
 
   get mmBtuHr(): number | null {
-    return this.tagValue('FLR_1.MMBTU.RATE.VLU.SCL')
+    return this.tagValue('FLR_1.MMBTU.Rate.VLU.SCL')
       ?? (this.reading ? (this.reading.flr_flow * 60 * 1011 * this.reading.ch4) / 100000000 : null);
   }
 
