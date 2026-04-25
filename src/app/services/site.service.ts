@@ -39,6 +39,7 @@ export interface SiteDataReading {
   inlet_pressure: number;
   o2: number;
   flr_sdv: number;
+  flare_status?: 'running' | 'alarm' | 'shutdown';
 }
 
 export interface LatestReadingsResponse {

@@ -10,7 +10,7 @@ import { environment } from '../../environments/environment';
 export class PlcService implements OnDestroy {
   private snapshotSubject = new BehaviorSubject<PlcSnapshot | null>(null);
   private tagsSubject = new BehaviorSubject<DiscoveredTag[]>([]);
-  private currentRoom: string | null = null;
+  private currentSite: { tenantId: number; siteId: number } | null = null;
   private snapshotSub?: Subscription;
   private tagsSub?: Subscription;
 
@@ -26,11 +26,11 @@ export class PlcService implements OnDestroy {
   }
 
   subscribeSite(tenantId: number, siteId: number): void {
-    if (this.currentRoom) {
-      this.wsService.leaveRoom(this.currentRoom);
+    if (this.currentSite) {
+      this.wsService.unsubscribeSite(this.currentSite.tenantId, this.currentSite.siteId);
     }
-    this.currentRoom = `site:${tenantId}:${siteId}`;
-    this.wsService.joinRoom(this.currentRoom);
+    this.currentSite = { tenantId, siteId };
+    this.wsService.subscribeSite(tenantId, siteId);
 
     this.snapshotSubject.next(null);
     this.tagsSubject.next([]);
@@ -45,9 +45,9 @@ export class PlcService implements OnDestroy {
   }
 
   unsubscribeSite(): void {
-    if (this.currentRoom) {
-      this.wsService.leaveRoom(this.currentRoom);
-      this.currentRoom = null;
+    if (this.currentSite) {
+      this.wsService.unsubscribeSite(this.currentSite.tenantId, this.currentSite.siteId);
+      this.currentSite = null;
     }
     this.snapshotSubject.next(null);
     this.tagsSubject.next([]);

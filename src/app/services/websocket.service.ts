@@ -33,10 +33,16 @@ export interface FtpStatus {
 export interface TagReading {
   name: string;
   value: number | boolean | string | null;
-  error: string | null;
+  error: boolean | string | null;
+  errorMessage?: string | null;
+  dataType?: string;
+  displayName?: string;
+  unit?: string | null;
 }
 
 export interface PlcSnapshot {
+  tenant_id: number;
+  site_id: number;
   timestamp: string;
   tags: TagReading[];
 }
@@ -137,6 +143,14 @@ export class WebSocketService implements OnDestroy {
     if (this.socket?.connected) {
       this.emitIdentify(auth0Id);
     }
+  }
+
+  subscribeSite(tenantId: number, siteId: number): void {
+    this.socket?.emit('subscribe_site', { tenant_id: tenantId, site_id: siteId });
+  }
+
+  unsubscribeSite(tenantId: number, siteId: number): void {
+    this.socket?.emit('unsubscribe_site', { tenant_id: tenantId, site_id: siteId });
   }
 
   joinRoom(room: string): void {
