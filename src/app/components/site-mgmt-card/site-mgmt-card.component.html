@@ -44,7 +44,7 @@
       <div class="flex items-center gap-2">
         @if (hasUpdate) {
           <p-button
-            label="Install"
+            [label]="'Install v' + latestOtaVersion"
             icon="pi pi-download"
             severity="warn"
             size="small"

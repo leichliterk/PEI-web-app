@@ -15,3 +15,12 @@
 ::ng-deep .report-row:hover > td[style*="sticky"] {
   background-color: var(--p-surface-100) !important;
 }
+
+::ng-deep .totals-row > td {
+  background-color: var(--p-surface-100);
+  border-top: 2px solid var(--p-surface-300) !important;
+}
+
+::ng-deep .totals-row > td[style*="sticky"] {
+  background-color: var(--p-surface-100);
+}

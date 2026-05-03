@@ -119,7 +119,8 @@ export class SiteComponent implements OnInit, OnDestroy {
     this.siteService.getLatestReadings(tenantId).subscribe({
       next: (response) => {
         this.reading = response.sites.find(r => r.site_id === this.siteId);
-      }
+      },
+      error: (err) => console.error('Failed to load latest reading:', err)
     });
 
     this.siteDataSubscription = this.webSocketService.siteData$.subscribe(r => {

@@ -68,7 +68,7 @@ export class SiteManagementComponent implements OnInit, OnDestroy {
       switchMap(u => forkJoin({
         tenant: this.tenantService.getTenantById(u!.tenant_id),
         releases: this.http.get<OtaRelease[]>(`${environment.API_SERVER}/ota/releases/${u!.tenant_id}`)
-          .pipe(catchError(() => of([] as OtaRelease[]))),
+          .pipe(catchError(err => { console.error('Failed to load OTA releases:', err); return of([] as OtaRelease[]); })),
         _tenantId: of(u!.tenant_id),
       }))
     ).subscribe({
@@ -83,7 +83,7 @@ export class SiteManagementComponent implements OnInit, OnDestroy {
         const statusCalls = tenant.sites.map(site =>
           this.http.get<SiteStatusResponse>(
             `${environment.API_SERVER}/site-management/${_tenantId}/${site.site_id}/status`
-          ).pipe(catchError(() => of(null)))
+          ).pipe(catchError(err => { console.error(`Failed to load status for site ${site.site_id}:`, err); return of(null); }))
         );
 
         if (statusCalls.length) {

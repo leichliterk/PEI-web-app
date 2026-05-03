@@ -82,7 +82,8 @@ export class HomeComponent implements OnInit, OnDestroy {
               map[r.site_id] = r;
             }
             this.readings = map;
-          }
+          },
+          error: (err) => console.error('Failed to load latest readings:', err)
         });
 
         this.subscribedSites = t.sites.map(s => ({ tenantId: t.tenant_id, siteId: s.site_id }));
