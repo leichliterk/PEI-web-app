@@ -68,7 +68,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
         // Fetch full user profile from backend (includes role)
         if (auth0User.email) {
-          this.userService.fetchAppUser(auth0User.email).subscribe();
+          this.userService.fetchAppUser(auth0User.email).subscribe({
+            error: (err) => console.error('Failed to load app user profile:', err)
+          });
         }
 
         // Connect to WebSocket when authenticated
@@ -76,7 +78,8 @@ export class AppComponent implements OnInit, OnDestroy {
           next: (tenant) => {
             this.webSocketService.connect(tenant.tenant_id);
             this.webSocketService.identify(this.auth0Id);
-          }
+          },
+          error: (err) => console.error('Failed to load tenant for WebSocket connection:', err)
         });
 
         // Load notification inbox
