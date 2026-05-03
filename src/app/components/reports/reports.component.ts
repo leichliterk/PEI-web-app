@@ -99,6 +99,17 @@ export class ReportsComponent implements OnInit {
     });
   }
 
+  get totals(): { [siteId: string]: number | null } {
+    const result: { [siteId: string]: number | null } = {};
+    for (const site of this.sites) {
+      const values = this.rows
+        .map(r => r[site.site_id] as number | null)
+        .filter((v): v is number => v != null);
+      result[site.site_id] = values.length ? values.reduce((a, b) => a + b, 0) : null;
+    }
+    return result;
+  }
+
   private formatDate(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');

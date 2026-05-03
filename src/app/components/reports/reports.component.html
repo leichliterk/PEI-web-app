@@ -70,6 +70,23 @@
         </tr>
       </ng-template>
 
+      <ng-template pTemplate="summary">
+        @if (rows.length > 0) {
+          <tr class="font-semibold border-t-2 border-surface-300">
+            <td style="position: sticky; left: 0;">Total</td>
+            @for (site of sites; track site.site_id) {
+              <td class="text-right font-mono text-sm">
+                @if (totals[site.site_id] != null) {
+                  {{ totals[site.site_id] | number:'1.4-4' }}
+                } @else {
+                  <span class="text-muted-color">—</span>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </ng-template>
+
       <ng-template pTemplate="empty">
         @if (!loading) {
           <tr>
