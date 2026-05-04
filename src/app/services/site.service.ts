@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PlcSnapshot } from './websocket.service';
 
 export interface Site {
   site_id: number;
@@ -89,5 +90,11 @@ export class SiteService {
 
   downloadFile(file_id: string): Observable<Blob> {
     return this.http.get(`${environment.API_SERVER}/files/download/${file_id}`, { responseType: 'blob' });
+  }
+
+  getSiteSnapshots(tenant_id: number, site_id: number, minutes: number = 1440): Observable<PlcSnapshot[]> {
+    return this.http.get<PlcSnapshot[]>(
+      `${environment.API_SERVER}/plc/${tenant_id}/${site_id}/snapshots?minutes=${minutes}`
+    );
   }
 }
