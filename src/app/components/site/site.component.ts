@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -12,6 +12,7 @@ import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { Site, SiteDataReading, SiteFile, SiteService, SiteUptime } from '../../services/site.service';
 import { PlcSnapshot, WebSocketService } from '../../services/websocket.service';
+import { UIChart } from 'primeng/chart';
 
 @Component({
   selector: 'app-site',
@@ -20,6 +21,8 @@ import { PlcSnapshot, WebSocketService } from '../../services/websocket.service'
   styleUrl: './site.component.scss',
 })
 export class SiteComponent implements OnInit, OnDestroy {
+  @ViewChild('snapshotChart') snapshotChart?: UIChart;
+
   siteId: number | null = null;
   siteData: Site | null = null;
   loading: boolean = true;
@@ -43,6 +46,10 @@ export class SiteComponent implements OnInit, OnDestroy {
   fileDialogFiles: SiteFile[] = [];
   reading: SiteDataReading | undefined;
   plcSnapshot: PlcSnapshot | undefined;
+  snapshots: PlcSnapshot[] = [];
+  snapshotChartData: any;
+  snapshotChartOptions: any;
+  snapshotsLoading = true;
   private wsSubscription?: Subscription;
   private siteDataSubscription?: Subscription;
   private plcSnapshotSubscription?: Subscription;
@@ -129,11 +136,129 @@ export class SiteComponent implements OnInit, OnDestroy {
 
     if (this.siteId) {
       this.webSocketService.subscribeSite(tenantId, this.siteId);
+
+      this.siteService.getSiteSnapshots(tenantId, this.siteId, 60).subscribe({
+        next: snapshots => {
+          this.snapshots = snapshots;
+          this.buildSnapshotChartData();
+          this.snapshotsLoading = false;
+        },
+        error: err => {
+          console.error('Failed to load PLC snapshots:', err);
+          this.snapshotsLoading = false;
+        }
+      });
     }
 
     this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
-      if (snapshot.site_id === this.siteId) this.plcSnapshot = snapshot;
+      if (snapshot.site_id !== this.siteId) return;
+      this.plcSnapshot = snapshot;
+      this.snapshots = [...this.snapshots.slice(1), snapshot];
+      this.buildSnapshotChartData();
     });
+  }
+
+  private buildSnapshotChartData(): void {
+    if (!this.snapshots.length) return;
+
+    const palette = [
+      '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+      '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
+    ];
+
+    const tagNames: string[] = [];
+    for (const snap of this.snapshots) {
+      for (const tag of snap.tags) {
+        const name = tag.displayName ?? tag.name;
+        if (name && !tagNames.includes(name) && !tag.error && typeof tag.value === 'number') {
+          tagNames.push(name);
+        }
+      }
+    }
+
+    const labels = this.snapshots.map(s =>
+      new Date(s.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    );
+
+    const dataForTag = (name: string) => this.snapshots.map(snap => {
+      const tag = snap.tags.find(t => (t.displayName ?? t.name) === name);
+      return tag && !tag.error && typeof tag.value === 'number' ? tag.value : null;
+    });
+
+    if (!this.snapshotChartData) {
+      // Initial build — create full structure and options
+      const scales: any = {
+        x: { ticks: { maxTicksLimit: 12, maxRotation: 0 } },
+      };
+
+      const datasets = tagNames.map((name, i) => {
+        const axisId = `y_${i}`;
+        scales[axisId] = { type: 'linear', display: false, beginAtZero: false, grace: '50%' };
+        const unit = this.snapshots.at(-1)?.tags.find(t => (t.displayName ?? t.name) === name)?.unit ?? null;
+        return {
+          label: name,
+          unit,
+          yAxisID: axisId,
+          data: dataForTag(name),
+          borderColor: palette[i % palette.length],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          spanGaps: true,
+        };
+      });
+
+      this.snapshotChartData = { labels, datasets };
+      this.snapshotChartOptions = {
+        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              generateLabels: (chart: any) => chart.data.datasets.map((ds: any, i: number) => ({
+                text: ds.label,
+                fillStyle: ds.borderColor,
+                strokeStyle: ds.borderColor,
+                lineWidth: 0,
+                hidden: !chart.isDatasetVisible(i),
+                datasetIndex: i,
+              }))
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              labelColor: (context: any) => ({
+                borderColor: context.dataset.borderColor,
+                backgroundColor: context.dataset.borderColor,
+              }),
+              label: (context: any) => {
+                const ds = context.dataset;
+                const value = context.parsed.y;
+                if (value == null) return '';
+                const unit = ds.unit ? ` ${ds.unit}` : '';
+                return `${ds.label}: ${value}${unit}`;
+              }
+            }
+          },
+        },
+        scales,
+      };
+    } else {
+      // Subsequent updates — mutate Chart.js instance directly, bypassing Angular binding
+      const chartJs = this.snapshotChart?.chart;
+      if (chartJs) {
+        chartJs.data.labels = labels;
+        for (const ds of chartJs.data.datasets) {
+          ds.data = dataForTag(ds.label as string);
+        }
+        chartJs.update('none'); // 'none' skips animation for live updates
+      }
+    }
   }
 
   private subscribeToStatusUpdates(): void {
