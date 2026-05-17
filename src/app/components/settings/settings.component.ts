@@ -68,48 +68,42 @@ export class SettingsComponent implements OnInit {
   ruleToDelete: NotificationRule | null = null;
   deleteInProgress = false;
 
-  // ── Create dialog ────────────────────────────────────────────────────────
-  createDialogVisible = false;
-  step = 1;
-
-  // Step 1
+  // ── Inline draft ─────────────────────────────────────────────────────────
+  draftVisible = false;
   sites: TenantSite[] = [];
-  selectedSite: TenantSite | null = null;
+  draftSite: TenantSite | null = null;
+  draftTags: NotificationTag[] = [];
+  draftTagsLoading = false;
+  draftTagsError = false;
+  draftTag: NotificationTag | null = null;
+  draftOperator: RuleOperator = 'gt';
+  draftThreshold: number | null = null;
+  submitting = false;
 
-  // Step 2
-  tags: NotificationTag[] = [];
-  tagsLoading = false;
-  tagsError = false;
-  selectedTag: NotificationTag | null = null;
-
-  // Step 3
   readonly operatorOptions = [
-    { label: '> Greater than',         value: 'gt'  },
-    { label: '≥ Greater than or equal', value: 'gte' },
-    { label: '< Less than',            value: 'lt'  },
-    { label: '≤ Less than or equal',   value: 'lte' },
-    { label: '= Equal',                value: 'eq'  },
-    { label: '≠ Not equal',            value: 'neq' },
+    { label: '>',  value: 'gt'  },
+    { label: '≥',  value: 'gte' },
+    { label: '<',  value: 'lt'  },
+    { label: '≤',  value: 'lte' },
+    { label: '=',  value: 'eq'  },
+    { label: '≠',  value: 'neq' },
   ];
 
   readonly operatorSymbols: Record<string, string> = {
     gt: '>', gte: '≥', lt: '<', lte: '≤', eq: '=', neq: '≠'
   };
 
-  selectedOperator: RuleOperator = 'gt';
-  threshold: number | null = null;
-  submitting = false;
-
-  get previewLabel(): string {
-    if (!this.selectedTag) return '—';
-    const sym = this.operatorSymbols[this.selectedOperator] ?? '?';
-    const unit = this.selectedTag.unit ? ` ${this.selectedTag.unit}` : '';
-    const val = this.threshold != null ? this.threshold : '…';
-    return `${this.selectedTag.displayName} ${sym} ${val}${unit}`;
+  get draftPreview(): string {
+    if (!this.draftTag) return '—';
+    const sym = this.operatorSymbols[this.draftOperator];
+    const unit = this.draftTag.unit ? ` ${this.draftTag.unit}` : '';
+    const val = this.draftThreshold != null ? this.draftThreshold : '…';
+    return `${this.draftTag.displayName} ${sym} ${val}${unit}`;
   }
 
-  get step2Valid(): boolean { return !!this.selectedTag; }
-  get step3Valid(): boolean { return this.threshold != null; }
+  get draftValid(): boolean {
+    return !!this.draftSite && !!this.draftTag && this.draftThreshold != null;
+  }
 
   constructor(
     private userService: UserService,
@@ -151,7 +145,7 @@ export class SettingsComponent implements OnInit {
     const previous = !rule.enabled;
     this.rulesService.setEnabled(rule.id, rule.enabled).subscribe({
       error: () => {
-        rule.enabled = previous; // revert
+        rule.enabled = previous;
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update rule' });
       },
     });
@@ -179,63 +173,63 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  // ── Create dialog ────────────────────────────────────────────────────────
+  // ── Inline draft ─────────────────────────────────────────────────────────
 
-  openCreateDialog(): void {
-    this.step = 1;
-    this.selectedSite = null;
-    this.selectedTag = null;
-    this.tags = [];
-    this.tagsError = false;
-    this.selectedOperator = 'gt';
-    this.threshold = null;
-    this.createDialogVisible = true;
+  openDraft(): void {
+    this.draftSite = null;
+    this.draftTag = null;
+    this.draftTags = [];
+    this.draftTagsError = false;
+    this.draftOperator = 'gt';
+    this.draftThreshold = null;
+    this.draftVisible = true;
   }
 
-  onSiteSelected(): void {
-    if (!this.selectedSite) return;
-    this.step = 2;
-    this.tags = [];
-    this.tagsError = false;
-    this.tagsLoading = true;
-    this.selectedTag = null;
+  cancelDraft(): void {
+    this.draftVisible = false;
+  }
+
+  onDraftSiteSelected(): void {
+    this.draftTag = null;
+    this.draftTags = [];
+    this.draftTagsError = false;
+    if (!this.draftSite) return;
 
     const tenantId = this.userService.appUserValue?.tenant_id;
     if (!tenantId) return;
 
-    this.rulesService.getTags(tenantId, this.selectedSite.site_id).subscribe({
+    this.draftTagsLoading = true;
+    this.rulesService.getTags(tenantId, this.draftSite.site_id).subscribe({
       next: tags => {
-        this.tags = tags.filter(t => t.displayName);
-        this.tagsLoading = false;
-        if (!this.tags.length) this.tagsError = true;
+        this.draftTags = tags.filter(t => t.displayName);
+        this.draftTagsLoading = false;
+        if (!this.draftTags.length) this.draftTagsError = true;
       },
       error: () => {
-        this.tagsError = true;
-        this.tagsLoading = false;
+        this.draftTagsError = true;
+        this.draftTagsLoading = false;
       },
     });
   }
 
-  goToStep3(): void { this.step = 3; }
-
-  submitRule(): void {
+  submitDraft(): void {
     const tenantId = this.userService.appUserValue?.tenant_id;
-    if (!tenantId || !this.selectedSite || !this.selectedTag || this.threshold == null) return;
+    if (!tenantId || !this.draftSite || !this.draftTag || this.draftThreshold == null) return;
 
     this.submitting = true;
     this.rulesService.createRule({
       tenant_id: tenantId,
-      site_id: this.selectedSite.site_id,
-      site_name: this.selectedSite.name,
-      tag_name: this.selectedTag.name,
-      tag_display_name: this.selectedTag.displayName,
-      tag_unit: this.selectedTag.unit ?? '',
-      operator: this.selectedOperator,
-      threshold: this.threshold,
+      site_id: this.draftSite.site_id,
+      site_name: this.draftSite.name,
+      tag_name: this.draftTag.name,
+      tag_display_name: this.draftTag.displayName,
+      tag_unit: this.draftTag.unit ?? '',
+      operator: this.draftOperator,
+      threshold: this.draftThreshold,
     }).subscribe({
       next: rule => {
         this.rules = [...this.rules, rule];
-        this.createDialogVisible = false;
+        this.draftVisible = false;
         this.submitting = false;
         this.messageService.add({ severity: 'success', summary: 'Rule Created', detail: rule.label });
       },
