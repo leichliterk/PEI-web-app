@@ -1,15 +1,264 @@
+<p-toast></p-toast>
+
 <div class="container mx-auto px-4 py-8 max-w-4xl">
   <h2 class="text-2xl font-bold text-white mb-6">Settings</h2>
 
+  <!-- ── Notification Rules ──────────────────────────────────────────────── -->
   <p-card>
     <ng-template pTemplate="header">
-      <div class="p-4">
-        <h3 class="text-xl font-semibold m-0">Application Settings</h3>
+      <div class="flex justify-between items-center p-4 pb-0">
+        <div>
+          <h3 class="text-xl font-semibold m-0">Notifications</h3>
+          <p class="text-sm text-muted-color m-0 mt-1">
+            You'll receive at most one alert every 5 minutes per rule while the condition remains active.
+          </p>
+        </div>
+        <p-button
+          label="Add Rule"
+          icon="pi pi-plus"
+          size="small"
+          (onClick)="openCreateDialog()">
+        </p-button>
       </div>
     </ng-template>
 
-    <div class="space-y-4">
-      <p class="text-muted-color">Configure your application preferences here.</p>
-    </div>
+    <!-- Loading -->
+    @if (rulesLoading) {
+      <div class="flex justify-center py-8">
+        <p-progressSpinner strokeWidth="4" style="width:40px;height:40px"></p-progressSpinner>
+      </div>
+    }
+
+    <!-- Error -->
+    @else if (rulesError) {
+      <div class="flex flex-col items-center gap-3 py-8 text-center">
+        <i class="pi pi-exclamation-circle text-3xl text-red-400"></i>
+        <p class="text-muted-color m-0">Failed to load notification rules.</p>
+        <p-button label="Retry" icon="pi pi-refresh" severity="secondary" size="small" (onClick)="loadRules()"></p-button>
+      </div>
+    }
+
+    <!-- Empty -->
+    @else if (rules.length === 0) {
+      <div class="flex flex-col items-center gap-2 py-8 text-center">
+        <i class="pi pi-bell text-3xl text-muted-color"></i>
+        <p class="text-muted-color m-0">No notification rules yet. Click <strong>Add Rule</strong> to create one.</p>
+      </div>
+    }
+
+    <!-- Rules grouped by site -->
+    @else {
+      @for (group of groupedRules; track group.siteId; let last = $last) {
+        <div>
+          <p class="text-sm font-semibold text-muted-color uppercase tracking-wide mb-2">{{ group.siteName }}</p>
+          <div class="flex flex-col gap-2">
+            @for (rule of group.rules; track rule.id) {
+              <div class="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-surface-50 border border-surface-200">
+                <span class="text-sm font-medium">{{ rule.label }}</span>
+                <div class="flex items-center gap-3 shrink-0">
+                  <p-toggleswitch
+                    [(ngModel)]="rule.enabled"
+                    (onChange)="toggleRule(rule)">
+                  </p-toggleswitch>
+                  <p-button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    (onClick)="openDeleteDialog(rule)">
+                  </p-button>
+                </div>
+              </div>
+            }
+          </div>
+          @if (!last) {
+            <p-divider></p-divider>
+          }
+        </div>
+      }
+    }
+
   </p-card>
 </div>
+
+<!-- ── Create Rule Dialog ──────────────────────────────────────────────────── -->
+<p-dialog
+  [(visible)]="createDialogVisible"
+  header="Add Notification Rule"
+  [modal]="true"
+  [style]="{'width': '520px'}"
+  [draggable]="false">
+
+  <!-- Step indicator -->
+  <div class="flex items-center gap-2 mb-6">
+    @for (s of [1, 2, 3]; track s) {
+      <div class="flex items-center gap-2">
+        <div
+          class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold transition-colors"
+          [class.bg-primary]="step >= s"
+          [class.text-white]="step >= s"
+          [class.bg-surface-200]="step < s"
+          [class.text-muted-color]="step < s">
+          {{ s }}
+        </div>
+        <span class="text-sm" [class.text-muted-color]="step < s">
+          {{ s === 1 ? 'Site' : s === 2 ? 'Tag' : 'Condition' }}
+        </span>
+        @if (s < 3) {
+          <i class="pi pi-chevron-right text-xs text-muted-color mx-1"></i>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Step 1: Select Site -->
+  @if (step === 1) {
+    <div class="flex flex-col gap-3">
+      <label class="text-sm font-medium">Select a site</label>
+      <p-select
+        [(ngModel)]="selectedSite"
+        [options]="sites"
+        optionLabel="name"
+        placeholder="Choose a site..."
+        [style]="{'width': '100%'}"
+        (onChange)="onSiteSelected()">
+      </p-select>
+    </div>
+  }
+
+  <!-- Step 2: Select Tag -->
+  @if (step === 2) {
+    <div class="flex flex-col gap-3">
+      <label class="text-sm font-medium">Select a tag for <strong>{{ selectedSite?.name }}</strong></label>
+
+      @if (tagsLoading) {
+        <div class="flex items-center gap-2 py-4">
+          <p-progressSpinner strokeWidth="4" style="width:24px;height:24px"></p-progressSpinner>
+          <span class="text-sm text-muted-color">Loading tags...</span>
+        </div>
+      } @else if (tagsError) {
+        <div class="flex items-center gap-2 text-muted-color py-4">
+          <i class="pi pi-info-circle"></i>
+          <span class="text-sm">No tag data available for this site.</span>
+        </div>
+      } @else {
+        <p-select
+          [(ngModel)]="selectedTag"
+          [options]="tags"
+          optionLabel="displayName"
+          placeholder="Choose a tag..."
+          [filter]="true"
+          filterBy="displayName"
+          [style]="{'width': '100%'}">
+          <ng-template pTemplate="selectedItem" let-tag>
+            <span>{{ tag.displayName }}@if (tag.unit) { <span class="text-muted-color text-xs ml-1">({{ tag.unit }})</span> }</span>
+          </ng-template>
+          <ng-template pTemplate="item" let-tag>
+            <span>{{ tag.displayName }}@if (tag.unit) { <span class="text-muted-color text-xs ml-2">({{ tag.unit }})</span> }</span>
+          </ng-template>
+        </p-select>
+      }
+    </div>
+  }
+
+  <!-- Step 3: Condition -->
+  @if (step === 3) {
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">Operator</label>
+        <p-select
+          [(ngModel)]="selectedOperator"
+          [options]="operatorOptions"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{'width': '100%'}">
+        </p-select>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">
+          Threshold@if (selectedTag?.unit) { <span class="text-muted-color font-normal">({{ selectedTag!.unit }})</span> }
+        </label>
+        <p-inputnumber
+          [(ngModel)]="threshold"
+          [useGrouping]="false"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="4"
+          placeholder="Enter a value..."
+          [style]="{'width': '100%'}">
+        </p-inputnumber>
+      </div>
+
+      <!-- Live preview -->
+      <div class="rounded-lg bg-surface-100 border border-surface-200 p-3">
+        <p class="text-xs text-muted-color m-0 mb-1">Preview</p>
+        <p class="text-sm font-semibold m-0">{{ previewLabel }}</p>
+      </div>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between">
+      <p-button
+        label="Back"
+        severity="secondary"
+        [text]="true"
+        [disabled]="step === 1"
+        (onClick)="step = step - 1">
+      </p-button>
+      <div class="flex gap-2">
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="createDialogVisible = false">
+        </p-button>
+        @if (step === 2) {
+          <p-button
+            label="Next"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            [disabled]="!step2Valid || tagsError"
+            (onClick)="goToStep3()">
+          </p-button>
+        }
+        @if (step === 3) {
+          <p-button
+            label="Create Rule"
+            icon="pi pi-check"
+            [disabled]="!step3Valid"
+            [loading]="submitting"
+            (onClick)="submitRule()">
+          </p-button>
+        }
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ── Delete Confirm Dialog ───────────────────────────────────────────────── -->
+<p-dialog
+  [(visible)]="deleteDialogVisible"
+  header="Delete Rule"
+  [modal]="true"
+  [style]="{'width': '400px'}"
+  [draggable]="false">
+  <p class="m-0">
+    Delete rule <strong>{{ ruleToDelete?.label }}</strong>? This cannot be undone.
+  </p>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [text]="true"
+      (onClick)="deleteDialogVisible = false">
+    </p-button>
+    <p-button
+      label="Delete"
+      severity="danger"
+      icon="pi pi-trash"
+      [loading]="deleteInProgress"
+      (onClick)="confirmDelete()">
+    </p-button>
+  </ng-template>
+</p-dialog>
