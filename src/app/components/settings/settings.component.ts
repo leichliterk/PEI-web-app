@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription, filter, take, switchMap } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
@@ -46,7 +47,9 @@ interface SiteGroup {
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
+  private sitesSub?: Subscription;
+
   // ── Rules list ───────────────────────────────────────────────────────────
   rules: NotificationRule[] = [];
   rulesLoading = true;
@@ -115,13 +118,18 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.loadRules();
 
-    const tenantId = this.userService.appUserValue?.tenant_id;
-    if (tenantId) {
-      this.tenantService.getTenantById(tenantId).subscribe({
-        next: t => { this.sites = t.sites; },
-        error: err => console.error('Failed to load sites:', err),
-      });
-    }
+    this.sitesSub = this.userService.appUser$.pipe(
+      filter(u => !!u),
+      take(1),
+      switchMap(u => this.tenantService.getTenantById(u!.tenant_id))
+    ).subscribe({
+      next: t => { this.sites = t.sites; },
+      error: err => console.error('Failed to load sites:', err),
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.sitesSub?.unsubscribe();
   }
 
   // ── Rules list ───────────────────────────────────────────────────────────
