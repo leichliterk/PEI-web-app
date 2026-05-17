@@ -209,7 +209,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.draftTagsLoading = true;
     this.rulesService.getTags(tenantId, this.draftSite.site_id).subscribe({
       next: tags => {
-        this.draftTags = tags.filter(t => t.displayName);
+        this.draftTags = tags;
         this.draftTagsLoading = false;
         if (!this.draftTags.length) this.draftTagsError = true;
       },

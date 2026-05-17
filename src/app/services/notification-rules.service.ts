@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type RuleOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq';
@@ -61,6 +61,13 @@ export class NotificationRulesService {
   }
 
   getTags(tenantId: number, siteId: number): Observable<NotificationTag[]> {
-    return this.http.get<NotificationTag[]>(`${this.plcBase}/${tenantId}/${siteId}/tags`);
+    return this.http.get<any>(`${this.plcBase}/${tenantId}/${siteId}/latest`).pipe(
+      map((res: any) => {
+        const tags: any[] = Array.isArray(res?.tags) ? res.tags : [];
+        return tags
+          .filter((t: any) => t.displayName)
+          .map((t: any): NotificationTag => ({ name: t.name, displayName: t.displayName, unit: t.unit ?? null }));
+      })
+    );
   }
 }
