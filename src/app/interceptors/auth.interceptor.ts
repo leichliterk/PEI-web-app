@@ -1,7 +1,8 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { switchMap } from 'rxjs';
+import { catchError, switchMap } from 'rxjs';
+import { of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -14,6 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         setHeaders: { Authorization: `Bearer ${token}` }
       });
       return next(authReq);
-    })
+    }),
+    catchError(() => next(req))  // if token retrieval fails, send request without auth header
   );
 };
