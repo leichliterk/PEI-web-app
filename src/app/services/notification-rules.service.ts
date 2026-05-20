@@ -56,6 +56,10 @@ export class NotificationRulesService {
     return this.http.patch<{ ok: boolean }>(`${this.base}/${id}`, { enabled });
   }
 
+  updateRule(id: string, changes: { operator: RuleOperator; threshold: number }): Observable<NotificationRule> {
+    return this.http.put<NotificationRule>(`${this.base}/${id}`, changes);
+  }
+
   deleteRule(id: string): Observable<{ ok: boolean }> {
     return this.http.delete<{ ok: boolean }>(`${this.base}/${id}`);
   }

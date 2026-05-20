@@ -71,6 +71,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ruleToDelete: NotificationRule | null = null;
   deleteInProgress = false;
 
+  // ── Inline edit ──────────────────────────────────────────────────────────
+  editingRuleId: string | null = null;
+  editOperator: RuleOperator = 'gt';
+  editThreshold: number | null = null;
+  editSubmitting = false;
+
   // ── Inline draft ─────────────────────────────────────────────────────────
   draftVisible = false;
   sites: TenantSite[] = [];
@@ -155,6 +161,32 @@ export class SettingsComponent implements OnInit, OnDestroy {
       error: () => {
         rule.enabled = previous;
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update rule' });
+      },
+    });
+  }
+
+  openEdit(rule: NotificationRule): void {
+    this.editingRuleId = rule.id;
+    this.editOperator = rule.operator;
+    this.editThreshold = rule.threshold;
+  }
+
+  cancelEdit(): void {
+    this.editingRuleId = null;
+  }
+
+  saveEdit(rule: NotificationRule): void {
+    if (this.editThreshold == null) return;
+    this.editSubmitting = true;
+    this.rulesService.updateRule(rule.id, { operator: this.editOperator, threshold: this.editThreshold }).subscribe({
+      next: (updated: NotificationRule) => {
+        Object.assign(rule, updated);
+        this.editingRuleId = null;
+        this.editSubmitting = false;
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update rule' });
+        this.editSubmitting = false;
       },
     });
   }
