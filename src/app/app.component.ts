@@ -168,8 +168,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   navigateToAccount() {
-    console.log('Navigate to account');
-    // TODO: Implement account navigation
+    this.router.navigate(['/delete-account']);
   }
 
   logout() {
