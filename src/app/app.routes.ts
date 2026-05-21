@@ -8,6 +8,7 @@ import { ScadaComponent } from './components/scada/scada.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { SiteManagementComponent } from './components/site-management/site-management.component';
+import { DeleteAccountComponent } from './components/delete-account/delete-account.component';
 
 export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'reports', component: ReportsComponent, canActivate: [authGuard] },
   { path: 'scada', component: ScadaComponent, canActivate: [authGuard] },
   { path: 'site-management', component: SiteManagementComponent, canActivate: [adminGuard] },
+  { path: 'delete-account', component: DeleteAccountComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];
