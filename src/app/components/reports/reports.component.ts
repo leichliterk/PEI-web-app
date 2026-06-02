@@ -5,7 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DatePickerModule } from 'primeng/datepicker';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { UserService } from '../../services/user.service';
 import { environment } from '../../../environments/environment';
@@ -27,6 +31,24 @@ interface ReportRow {
   [siteId: string]: number | null | string;
 }
 
+interface ReportSettings {
+  creditValue: number | null;
+  T: number | null;
+  DE: number | null;
+  CF: number | null;
+  PEMDF: number | null;
+}
+
+const SETTINGS_KEY = 'pei_report_settings';
+
+const DEFAULT_SETTINGS: ReportSettings = {
+  creditValue: null,
+  T: null,
+  DE: null,
+  CF: null,
+  PEMDF: null,
+};
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -37,6 +59,10 @@ interface ReportRow {
     TableModule,
     DatePickerModule,
     ToastModule,
+    DialogModule,
+    InputNumberModule,
+    DividerModule,
+    SelectButtonModule,
   ],
   providers: [MessageService],
   templateUrl: './reports.component.html',
@@ -53,18 +79,77 @@ export class ReportsComponent implements OnInit {
   loading = false;
   hasRun = false;
 
+  periodMode: 'current' | 'previous' | 'custom' = 'current';
+  periodOptions = [
+    { label: 'Current Month', value: 'current' },
+    { label: 'Previous Month', value: 'previous' },
+    { label: 'Custom', value: 'custom' },
+  ];
+
+  // ── Report Settings ───────────────────────────────────────────────────────
+  settingsVisible = false;
+  settings: ReportSettings = { ...DEFAULT_SETTINGS };
+  draft: ReportSettings = { ...DEFAULT_SETTINGS };
+
   constructor(
     private http: HttpClient,
     private messageService: MessageService,
     private userService: UserService
   ) {
-    const now = new Date();
-    this.endDate = new Date(now);
-    this.startDate = new Date(now);
-    this.startDate.setDate(this.startDate.getDate() - 30);
+    const { start, end } = this.periodDates('current');
+    this.startDate = start;
+    this.endDate = end;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    try {
+      const stored = localStorage.getItem(SETTINGS_KEY);
+      if (stored) this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+    } catch { /* ignore */ }
+  }
+
+  onPeriodChange(mode: 'current' | 'previous' | 'custom'): void {
+    if (mode === 'custom') return;
+    const { start, end } = this.periodDates(mode);
+    this.startDate = start;
+    this.endDate = end;
+  }
+
+  private periodDates(mode: 'current' | 'previous' | 'custom'): { start: Date; end: Date } {
+    const now = new Date();
+    if (mode === 'current') {
+      return {
+        start: new Date(now.getFullYear(), now.getMonth(), 1),
+        end: new Date(now),
+      };
+    }
+    if (mode === 'previous') {
+      const y = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+      const m = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+      return {
+        start: new Date(y, m, 1),
+        end: new Date(y, m + 1, 0),
+      };
+    }
+    return { start: this.startDate, end: this.endDate };
+  }
+
+  openSettings(): void {
+    this.draft = {
+      creditValue: this.settings.creditValue,
+      T:     this.settings.T     ?? this.constants?.T     ?? null,
+      DE:    this.settings.DE    ?? this.constants?.DE    ?? null,
+      CF:    this.settings.CF    ?? this.constants?.CF    ?? null,
+      PEMDF: this.settings.PEMDF ?? this.constants?.PEMDF ?? null,
+    };
+    this.settingsVisible = true;
+  }
+
+  saveSettings(): void {
+    this.settings = { ...this.draft };
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch { /* ignore */ }
+    this.settingsVisible = false;
+  }
 
   runReport(): void {
     const tenantId = this.userService.appUserValue?.tenant_id;
@@ -73,12 +158,18 @@ export class ReportsComponent implements OnInit {
     const start = this.formatDate(this.startDate);
     const end = this.formatDate(this.endDate);
 
+    const params: Record<string, string> = { start, end };
+    if (this.settings.T != null)     params['T']     = String(this.settings.T);
+    if (this.settings.DE != null)    params['DE']    = String(this.settings.DE);
+    if (this.settings.CF != null)    params['CF']    = String(this.settings.CF);
+    if (this.settings.PEMDF != null) params['PEMDF'] = String(this.settings.PEMDF);
+
     this.loading = true;
     this.hasRun = true;
 
     this.http.get<ReportResponse>(
       `${environment.API_SERVER}/reports/daily-destruction/${tenantId}`,
-      { params: { start, end } }
+      { params }
     ).subscribe({
       next: res => {
         this.sites = res.sites;
@@ -97,6 +188,31 @@ export class ReportsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  rowTotal(row: ReportRow): number | null {
+    const values = this.sites
+      .map(s => row[s.site_id] as number | null)
+      .filter((v): v is number => v != null);
+    return values.length ? values.reduce((a, b) => a + b, 0) : null;
+  }
+
+  rowValue(row: ReportRow): number | null {
+    if (this.settings.creditValue == null) return null;
+    const total = this.rowTotal(row);
+    return total != null ? total * this.settings.creditValue : null;
+  }
+
+  get grandTotal(): number | null {
+    const values = this.sites
+      .map(s => this.totals[s.site_id])
+      .filter((v): v is number => v != null);
+    return values.length ? values.reduce((a, b) => a + b, 0) : null;
+  }
+
+  get grandValue(): number | null {
+    if (this.settings.creditValue == null || this.grandTotal == null) return null;
+    return this.grandTotal * this.settings.creditValue;
   }
 
   get totals(): { [siteId: string]: number | null } {

@@ -1,38 +1,60 @@
 <p-toast></p-toast>
 
 <div class="px-4 py-8">
-<div class="w-[1400px] mx-auto">
+<div class="w-full">
 
-  <div class="mb-6">
-    <h2 class="text-2xl font-semibold m-0">Daily Destruction Credits</h2>
-    <p class="text-muted-color mt-1 mb-0">Net MT CH&#8324; destroyed per site per day</p>
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold m-0">Daily Destruction Credits</h2>
+      <p class="text-muted-color mt-1 mb-0">Net MT CH&#8324; destroyed per site per day</p>
+    </div>
+    <p-button
+      icon="pi pi-cog"
+      severity="secondary"
+      [text]="true"
+      [rounded]="true"
+      aria-label="Report Settings"
+      (onClick)="openSettings()">
+    </p-button>
   </div>
 
   <!-- Controls -->
-  <div class="flex items-end gap-4 mb-6">
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium">Start Date</label>
-      <p-datepicker
-        [(ngModel)]="startDate"
-        [showIcon]="true"
-        dateFormat="mm/dd/yy"
-        [maxDate]="endDate">
-      </p-datepicker>
-    </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium">End Date</label>
-      <p-datepicker
-        [(ngModel)]="endDate"
-        [showIcon]="true"
-        dateFormat="mm/dd/yy"
-        [minDate]="startDate">
-      </p-datepicker>
-    </div>
+  <div class="flex items-center gap-4 mb-6 flex-wrap">
+    <p-selectbutton
+      [(ngModel)]="periodMode"
+      [options]="periodOptions"
+      optionLabel="label"
+      optionValue="value"
+      (onChange)="onPeriodChange(periodMode)">
+    </p-selectbutton>
+
+    @if (periodMode === 'custom') {
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">Start Date</label>
+        <p-datepicker
+          [(ngModel)]="startDate"
+          [showIcon]="true"
+          dateFormat="mm/dd/yy"
+          [maxDate]="endDate">
+        </p-datepicker>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">End Date</label>
+        <p-datepicker
+          [(ngModel)]="endDate"
+          [showIcon]="true"
+          dateFormat="mm/dd/yy"
+          [minDate]="startDate">
+        </p-datepicker>
+      </div>
+    }
+
     <p-button
       label="Run Report"
       icon="pi pi-play"
       [loading]="loading"
       [disabled]="!startDate || !endDate"
+      styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700 px-4 py-2"
       (onClick)="runReport()">
     </p-button>
   </div>
@@ -52,6 +74,10 @@
           @for (site of sites; track site.site_id) {
             <th class="text-right" style="min-width: 130px">{{ site.name }}</th>
           }
+          <th class="text-right font-semibold" style="min-width: 130px">Daily Total</th>
+          @if (settings.creditValue != null) {
+            <th class="text-right font-semibold" style="min-width: 130px">Daily Value</th>
+          }
         </tr>
       </ng-template>
 
@@ -67,6 +93,22 @@
               }
             </td>
           }
+          <td class="text-right font-mono text-sm font-semibold">
+            @if (rowTotal(row) != null) {
+              {{ rowTotal(row) | number:'1.4-4' }}
+            } @else {
+              <span class="text-muted-color">—</span>
+            }
+          </td>
+          @if (settings.creditValue != null) {
+            <td class="text-right font-mono text-sm">
+              @if (rowValue(row) != null) {
+                {{ rowValue(row) | currency }}
+              } @else {
+                <span class="text-muted-color">—</span>
+              }
+            </td>
+          }
         </tr>
         @if (rowIndex === rows.length - 1) {
           <tr class="totals-row">
@@ -75,6 +117,22 @@
               <td class="text-right font-mono text-sm font-semibold">
                 @if (totals[site.site_id] != null) {
                   {{ totals[site.site_id] | number:'1.4-4' }}
+                } @else {
+                  <span class="text-muted-color">—</span>
+                }
+              </td>
+            }
+            <td class="text-right font-mono text-sm font-semibold">
+              @if (grandTotal != null) {
+                {{ grandTotal | number:'1.4-4' }}
+              } @else {
+                <span class="text-muted-color">—</span>
+              }
+            </td>
+            @if (settings.creditValue != null) {
+              <td class="text-right font-mono text-sm font-semibold">
+                @if (grandValue != null) {
+                  {{ grandValue | currency }}
                 } @else {
                   <span class="text-muted-color">—</span>
                 }
@@ -97,15 +155,110 @@
 
     <!-- Constants panel -->
     @if (constants && rows.length > 0) {
-      <div class="mt-6 p-4 rounded-lg bg-surface-100 text-sm flex gap-8">
+      <div class="mt-6 p-4 rounded-lg bg-surface-100 text-sm flex gap-8 flex-wrap">
         <span class="text-muted-color font-medium">Constants used:</span>
         <span><span class="font-medium">T</span> = {{ constants.T }} min</span>
         <span><span class="font-medium">DE</span> = {{ constants.DE }}%</span>
         <span><span class="font-medium">CF</span> = {{ constants.CF }}</span>
         <span><span class="font-medium">PEMDF</span> = {{ constants.PEMDF }}</span>
+        @if (settings.creditValue != null) {
+          <span><span class="font-medium">Credit Value</span> = {{ settings.creditValue | currency }} / MT CH&#8324;</span>
+        }
       </div>
     }
   }
 
 </div>
 </div>
+
+<!-- Report Settings Dialog -->
+<p-dialog
+  [(visible)]="settingsVisible"
+  header="Report Settings"
+  [modal]="true"
+  [style]="{'width': '420px'}"
+  [resizable]="false"
+  [draggable]="false">
+
+  <div class="flex flex-col gap-5 py-2">
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">Credit Value ($ per MT CH&#8324;)</label>
+      <p-inputnumber
+        [(ngModel)]="draft.creditValue"
+        mode="currency"
+        currency="USD"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="4"
+        placeholder="e.g. 15.00"
+        [style]="{'width': '100%'}">
+      </p-inputnumber>
+      <span class="text-xs text-muted-color">Leave blank to hide the Daily Value column.</span>
+    </div>
+
+    <p-divider></p-divider>
+
+    <p class="text-sm font-medium m-0">Constants</p>
+    <span class="text-xs text-muted-color -mt-4">Values are sent to the server when running the report. Leave a field blank to use the server default.</span>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">T (minutes)</label>
+        <p-inputnumber
+          [(ngModel)]="draft.T"
+          [useGrouping]="false"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="4"
+          [style]="{'width': '100%'}">
+        </p-inputnumber>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">DE (%)</label>
+        <p-inputnumber
+          [(ngModel)]="draft.DE"
+          [useGrouping]="false"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="4"
+          [style]="{'width': '100%'}">
+        </p-inputnumber>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">CF</label>
+        <p-inputnumber
+          [(ngModel)]="draft.CF"
+          [useGrouping]="false"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="6"
+          [style]="{'width': '100%'}">
+        </p-inputnumber>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">PEMDF</label>
+        <p-inputnumber
+          [(ngModel)]="draft.PEMDF"
+          [useGrouping]="false"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="6"
+          [style]="{'width': '100%'}">
+        </p-inputnumber>
+      </div>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [text]="true"
+      styleClass="px-4 py-2"
+      (onClick)="settingsVisible = false">
+    </p-button>
+    <p-button
+      label="Save"
+      icon="pi pi-check"
+      styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700 px-4 py-2"
+      (onClick)="saveSettings()">
+    </p-button>
+  </ng-template>
+</p-dialog>
