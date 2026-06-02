@@ -1,3 +1,14 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+::ng-deep p-dialog p-inputnumber .p-inputnumber-input,
+::ng-deep p-dialog input.p-inputtext {
+  border: 1px solid var(--p-surface-300) !important;
+  border-radius: 6px;
+}
+
 ::ng-deep .p-datatable-sm .p-datatable-tbody > tr > td,
 ::ng-deep .p-datatable-sm .p-datatable-thead > tr > th {
   padding-top: 0.25rem;
