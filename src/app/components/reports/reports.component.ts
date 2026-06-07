@@ -15,7 +15,7 @@ import { UserService } from '../../services/user.service';
 import { environment } from '../../../environments/environment';
 
 interface ReportSite {
-  site_id: number;
+  site_id: string;
   name: string;
 }
 
@@ -217,7 +217,7 @@ export class ReportsComponent implements OnInit {
   }
 
   get totals(): { [siteId: string]: number | null } {
-    const result: { [siteId: string]: number | null } = {};
+    const result: { [site_id: string]: number | null } = {};
     for (const site of this.sites) {
       const values = this.rows
         .map(r => r[site.site_id] as number | null)

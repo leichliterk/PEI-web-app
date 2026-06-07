@@ -15,7 +15,7 @@ import { ServiceStatus } from '../../services/websocket.service';
 import { environment } from '../../../environments/environment';
 
 interface SiteStatusResponse {
-  site_id: number;
+  site_id: string;
   connected: boolean;
   service: ServiceStatus;
 }
@@ -45,11 +45,11 @@ export class SiteManagementComponent implements OnInit, OnDestroy {
   sites: TenantSite[] = [];
   layout: 'grid' | 'list' = 'grid';
   loading = true;
-  serviceStatuses: { [siteId: number]: SiteStatusResponse } = {};
+  serviceStatuses: { [siteId: string]: SiteStatusResponse } = {};
   latestOtaVersion: string | null = null;
   private latestOtaReleaseId: string | null = null;
-  restartLoadingSites = new Set<number>();
-  installLoadingSites = new Set<number>();
+  restartLoadingSites = new Set<string>();
+  installLoadingSites = new Set<string>();
 
   private tenantId: number | null = null;
   private sub?: Subscription;
@@ -88,7 +88,7 @@ export class SiteManagementComponent implements OnInit, OnDestroy {
 
         if (statusCalls.length) {
           forkJoin(statusCalls).subscribe(results => {
-            const map: { [siteId: number]: SiteStatusResponse } = {};
+            const map: { [siteId: string]: SiteStatusResponse } = {};
             for (const r of results) {
               if (r) map[r.site_id] = r;
             }
@@ -102,7 +102,7 @@ export class SiteManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  onRestartService(siteId: number): void {
+  onRestartService(siteId: string): void {
     if (!this.tenantId) return;
     this.restartLoadingSites = new Set(this.restartLoadingSites).add(siteId);
     this.http.post<{ success: boolean; error: string | null }>(
@@ -123,7 +123,7 @@ export class SiteManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  onInstallOta(siteId: number): void {
+  onInstallOta(siteId: string): void {
     if (!this.tenantId || !this.latestOtaReleaseId) return;
     this.installLoadingSites = new Set(this.installLoadingSites).add(siteId);
     this.http.post<{ success: boolean; error?: string }>(

@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { PlcSnapshot } from './websocket.service';
 
 export interface Site {
-  site_id: number;
+  site_id: string;
   name: string;
   connection_status: 'online' | 'warning' | 'offline';
   app_version?: string;
@@ -21,7 +21,7 @@ export interface UptimeSession {
 
 export interface SiteUptime {
   tenant_id: number;
-  site_id: number;
+  site_id: string;
   days: number;
   start_date: string;
   end_date: string;
@@ -32,7 +32,7 @@ export interface SiteUptime {
 }
 
 export interface SiteDataReading {
-  site_id: number;
+  site_id: string;
   tenant_id: number;
   timestamp: string;
   flr_flow: number;
@@ -51,7 +51,7 @@ export interface LatestReadingsResponse {
 export interface SiteFile {
   _id: string;
   tenant_id: number;
-  site_id: number;
+  site_id: string;
   filename: string;
   size: number;
   source: string;
@@ -72,15 +72,15 @@ export class SiteService {
     return this.http.get<Site[]>(`${environment.API_SERVER}/site/getAllsites`);
   }
 
-  getSiteById(site_id: number): Observable<Site> {
+  getSiteById(site_id: string): Observable<Site> {
     return this.http.get<Site>(`${environment.API_SERVER}/site/getSiteById/${site_id}`);
   }
 
-  getSiteUptime(tenant_id: number, site_id: number, days: number = 7): Observable<SiteUptime> {
+  getSiteUptime(tenant_id: number, site_id: string, days: number = 7): Observable<SiteUptime> {
     return this.http.get<SiteUptime>(`${environment.API_SERVER}/site/uptime/${tenant_id}/${site_id}?days=${days}`);
   }
 
-  getSiteFiles(tenant_id: number, site_id: number): Observable<SiteFile[]> {
+  getSiteFiles(tenant_id: number, site_id: string): Observable<SiteFile[]> {
     return this.http.get<SiteFile[]>(`${environment.API_SERVER}/files/${tenant_id}/${site_id}`);
   }
 
@@ -92,7 +92,7 @@ export class SiteService {
     return this.http.get(`${environment.API_SERVER}/files/download/${file_id}`, { responseType: 'blob' });
   }
 
-  getSiteSnapshots(tenant_id: number, site_id: number, minutes: number = 1440): Observable<PlcSnapshot[]> {
+  getSiteSnapshots(tenant_id: number, site_id: string, minutes: number = 1440): Observable<PlcSnapshot[]> {
     return this.http.get<PlcSnapshot[]>(
       `${environment.API_SERVER}/plc/${tenant_id}/${site_id}/snapshots?minutes=${minutes}`
     );
