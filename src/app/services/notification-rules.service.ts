@@ -8,7 +8,7 @@ export type RuleOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq';
 export interface NotificationRule {
   id: string;
   tenant_id: number;
-  site_id: number;
+  site_id: string;
   site_name: string;
   tag_name: string;
   tag_display_name: string;
@@ -22,7 +22,7 @@ export interface NotificationRule {
 
 export interface CreateRulePayload {
   tenant_id: number;
-  site_id: number;
+  site_id: string;
   site_name: string;
   tag_name: string;
   tag_display_name: string;
@@ -64,7 +64,7 @@ export class NotificationRulesService {
     return this.http.delete<{ ok: boolean }>(`${this.base}/${id}`);
   }
 
-  getTags(tenantId: number, siteId: number): Observable<NotificationTag[]> {
+  getTags(tenantId: number, siteId: string): Observable<NotificationTag[]> {
     return this.http.get<any>(`${this.plcBase}/${tenantId}/${siteId}/latest`).pipe(
       map((res: any) => {
         const tags: any[] = Array.isArray(res?.tags) ? res.tags : [];

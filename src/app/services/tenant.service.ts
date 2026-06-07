@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface TenantSite {
-  site_id: number;
+  site_id: string;
   name: string;
   api_key?: string;
   connection_status?: boolean;
