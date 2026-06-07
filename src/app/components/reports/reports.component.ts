@@ -78,6 +78,7 @@ export class ReportsComponent implements OnInit {
 
   loading = false;
   hasRun = false;
+  hoveredCol: number | null = null;
 
   periodMode: 'current' | 'previous' | 'custom' = 'current';
   periodOptions = [
