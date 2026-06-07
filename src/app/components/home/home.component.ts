@@ -43,14 +43,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.sortMenuItems[0].icon = value === 'name' ? 'pi pi-check' : 'pi pi-fw';
     this.sortMenuItems[1].icon = value === 'site_id' ? 'pi pi-check' : 'pi pi-fw';
   }
-  readings: { [site_id: number]: SiteDataReading } = {};
-  plcSnapshots: { [site_id: number]: PlcSnapshot } = {};
+  readings: { [site_id: string]: SiteDataReading } = {};
+  plcSnapshots: { [site_id: string]: PlcSnapshot } = {};
 
   get sortedSites(): Site[] {
     return [...this.sites].sort((a, b) =>
       this.sortBy === 'name'
         ? a.name.localeCompare(b.name)
-        : a.site_id - b.site_id
+        : a.site_id.localeCompare(b.site_id)
     );
   }
   private wsSubscription?: Subscription;
@@ -77,7 +77,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
         this.siteService.getLatestReadings(t.tenant_id).subscribe({
           next: (response) => {
-            const map: { [site_id: number]: SiteDataReading } = {};
+            const map: { [site_id: string]: SiteDataReading } = {};
             for (const r of response.sites) {
               map[r.site_id] = r;
             }

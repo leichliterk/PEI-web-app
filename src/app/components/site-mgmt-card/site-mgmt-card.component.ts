@@ -7,7 +7,7 @@ import { TenantSite } from '../../services/tenant.service';
 import { ServiceStatus } from '../../services/websocket.service';
 
 interface SiteStatusResponse {
-  site_id: number;
+  site_id: string;
   connected: boolean;
   service: ServiceStatus;
 }
@@ -26,8 +26,8 @@ export class SiteMgmtCardComponent {
   @Input() restartLoading = false;
   @Input() installLoading = false;
 
-  @Output() restartService = new EventEmitter<number>();
-  @Output() installOta = new EventEmitter<number>();
+  @Output() restartService = new EventEmitter<string>();
+  @Output() installOta = new EventEmitter<string>();
 
   get hasUpdate(): boolean {
     return !!this.site.app_version && !!this.latestOtaVersion

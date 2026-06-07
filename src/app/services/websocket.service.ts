@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { SiteDataReading } from './site.service';
 
 export interface SiteStatusUpdate {
-  site_id: number;
+  site_id: string;
   connection_status: boolean;
   last_seen?: string;
 }
@@ -42,7 +42,7 @@ export interface TagReading {
 
 export interface PlcSnapshot {
   tenant_id: number;
-  site_id: number;
+  site_id: string;
   timestamp: string;
   tags: TagReading[];
 }
@@ -105,8 +105,8 @@ export class WebSocketService implements OnDestroy {
         }
         // Re-join any active site rooms after reconnect
         for (const key of this.siteSubCounts.keys()) {
-          const [tid, sid] = key.split(':').map(Number);
-          this.socket?.emit('subscribe_site', { tenant_id: tid, site_id: sid });
+          const [tid, sid] = key.split(':');
+          this.socket?.emit('subscribe_site', { tenant_id: Number(tid), site_id: sid });
         }
       });
 
@@ -151,7 +151,7 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
-  subscribeSite(tenantId: number, siteId: number): void {
+  subscribeSite(tenantId: number, siteId: string): void {
     const key = `${tenantId}:${siteId}`;
     const count = this.siteSubCounts.get(key) ?? 0;
     this.siteSubCounts.set(key, count + 1);
@@ -160,7 +160,7 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
-  unsubscribeSite(tenantId: number, siteId: number): void {
+  unsubscribeSite(tenantId: number, siteId: string): void {
     const key = `${tenantId}:${siteId}`;
     const count = (this.siteSubCounts.get(key) ?? 1) - 1;
     if (count <= 0) {
