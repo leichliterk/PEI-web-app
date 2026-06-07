@@ -9,10 +9,17 @@
   border-radius: 6px;
 }
 
+
 ::ng-deep .p-datatable-sm .p-datatable-tbody > tr > td,
 ::ng-deep .p-datatable-sm .p-datatable-thead > tr > th {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+::ng-deep .col-hover {
+  background-color: var(--p-surface-100) !important;
 }
 
 ::ng-deep .report-row:hover > td {

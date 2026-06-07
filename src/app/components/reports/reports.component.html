@@ -1,7 +1,7 @@
 <p-toast></p-toast>
 
 <div class="px-4 py-8">
-<div class="w-full">
+<div class="w-fit mx-auto" style="min-width: 800px">
 
   <div class="flex items-start justify-between mb-6">
     <div>
@@ -70,38 +70,54 @@
 
       <ng-template pTemplate="header">
         <tr>
-          <th class="font-semibold" style="min-width: 120px; position: sticky; left: 0; z-index: 1;">Date</th>
-          @for (site of sites; track site.site_id) {
-            <th class="text-right" style="min-width: 130px">{{ site.name }}</th>
+          <th class="font-semibold" style="min-width: 120px; position: sticky; left: 0; z-index: 1;"
+              [class.col-hover]="hoveredCol === 0"
+              (mouseenter)="hoveredCol = 0" (mouseleave)="hoveredCol = null">Date</th>
+          @for (site of sites; track site.site_id; let i = $index) {
+            <th class="text-right" style="min-width: 50px"
+                [class.col-hover]="hoveredCol === i + 1"
+                (mouseenter)="hoveredCol = i + 1" (mouseleave)="hoveredCol = null">{{ site.name }}</th>
           }
-          <th class="text-right font-semibold" style="min-width: 130px">Daily Total</th>
+          <th class="text-right font-semibold" style="min-width: 50px"
+              [class.col-hover]="hoveredCol === sites.length + 1"
+              (mouseenter)="hoveredCol = sites.length + 1" (mouseleave)="hoveredCol = null">Daily Total</th>
           @if (settings.creditValue != null) {
-            <th class="text-right font-semibold" style="min-width: 130px">Daily Value</th>
+            <th class="text-right font-semibold" style="min-width: 50px"
+                [class.col-hover]="hoveredCol === sites.length + 2"
+                (mouseenter)="hoveredCol = sites.length + 2" (mouseleave)="hoveredCol = null">Daily Value</th>
           }
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
         <tr class="report-row">
-          <td class="font-mono text-sm" style="position: sticky; left: 0;">{{ row.date }}</td>
-          @for (site of sites; track site.site_id) {
-            <td class="text-right font-mono text-sm">
+          <td class="font-mono text-sm" style="position: sticky; left: 0;"
+              [class.col-hover]="hoveredCol === 0"
+              (mouseenter)="hoveredCol = 0" (mouseleave)="hoveredCol = null">{{ row.date }}</td>
+          @for (site of sites; track site.site_id; let i = $index) {
+            <td class="text-right font-mono text-sm"
+                [class.col-hover]="hoveredCol === i + 1"
+                (mouseenter)="hoveredCol = i + 1" (mouseleave)="hoveredCol = null">
               @if (row[site.site_id] != null) {
-                {{ row[site.site_id] | number:'1.4-4' }}
+                {{ row[site.site_id] | number:'1.2-2' }}
               } @else {
                 <span class="text-muted-color">—</span>
               }
             </td>
           }
-          <td class="text-right font-mono text-sm font-semibold">
+          <td class="text-right font-mono text-sm font-semibold"
+              [class.col-hover]="hoveredCol === sites.length + 1"
+              (mouseenter)="hoveredCol = sites.length + 1" (mouseleave)="hoveredCol = null">
             @if (rowTotal(row) != null) {
-              {{ rowTotal(row) | number:'1.4-4' }}
+              {{ rowTotal(row) | number:'1.2-2' }}
             } @else {
               <span class="text-muted-color">—</span>
             }
           </td>
           @if (settings.creditValue != null) {
-            <td class="text-right font-mono text-sm">
+            <td class="text-right font-mono text-sm"
+                [class.col-hover]="hoveredCol === sites.length + 2"
+                (mouseenter)="hoveredCol = sites.length + 2" (mouseleave)="hoveredCol = null">
               @if (rowValue(row) != null) {
                 {{ rowValue(row) | currency }}
               } @else {
@@ -112,25 +128,33 @@
         </tr>
         @if (rowIndex === rows.length - 1) {
           <tr class="totals-row">
-            <td class="font-semibold" style="position: sticky; left: 0;">Total</td>
-            @for (site of sites; track site.site_id) {
-              <td class="text-right font-mono text-sm font-semibold">
+            <td class="font-semibold" style="position: sticky; left: 0;"
+                [class.col-hover]="hoveredCol === 0"
+                (mouseenter)="hoveredCol = 0" (mouseleave)="hoveredCol = null">Total</td>
+            @for (site of sites; track site.site_id; let i = $index) {
+              <td class="text-right font-mono text-sm font-semibold"
+                  [class.col-hover]="hoveredCol === i + 1"
+                  (mouseenter)="hoveredCol = i + 1" (mouseleave)="hoveredCol = null">
                 @if (totals[site.site_id] != null) {
-                  {{ totals[site.site_id] | number:'1.4-4' }}
+                  {{ totals[site.site_id] | number:'1.2-2' }}
                 } @else {
                   <span class="text-muted-color">—</span>
                 }
               </td>
             }
-            <td class="text-right font-mono text-sm font-semibold">
+            <td class="text-right font-mono text-sm font-semibold"
+                [class.col-hover]="hoveredCol === sites.length + 1"
+                (mouseenter)="hoveredCol = sites.length + 1" (mouseleave)="hoveredCol = null">
               @if (grandTotal != null) {
-                {{ grandTotal | number:'1.4-4' }}
+                {{ grandTotal | number:'1.2-2' }}
               } @else {
                 <span class="text-muted-color">—</span>
               }
             </td>
             @if (settings.creditValue != null) {
-              <td class="text-right font-mono text-sm font-semibold">
+              <td class="text-right font-mono text-sm font-semibold"
+                  [class.col-hover]="hoveredCol === sites.length + 2"
+                  (mouseenter)="hoveredCol = sites.length + 2" (mouseleave)="hoveredCol = null">
                 @if (grandValue != null) {
                   {{ grandValue | currency }}
                 } @else {
