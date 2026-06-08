@@ -22,7 +22,7 @@ import {
 } from '../../services/notification-rules.service';
 
 interface SiteGroup {
-  siteId: number;
+  siteId: string;
   siteName: string;
   rules: NotificationRule[];
 }
@@ -56,7 +56,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   rulesError = false;
 
   get groupedRules(): SiteGroup[] {
-    const map = new Map<number, SiteGroup>();
+    const map = new Map<string, SiteGroup>();
     for (const rule of this.rules) {
       if (!map.has(rule.site_id)) {
         map.set(rule.site_id, { siteId: rule.site_id, siteName: rule.site_name, rules: [] });
