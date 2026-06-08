@@ -21,7 +21,7 @@ export interface AppUser {
   status: string;
   group: string;
   tenant_id: number;
-  site_ids: number[];
+  site_ids: string[];
 }
 
 @Injectable({
