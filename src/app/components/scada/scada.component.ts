@@ -39,7 +39,7 @@ interface ScopeOption { label: string; value: string | null; }
 })
 export class ScadaComponent implements OnInit, OnDestroy {
   sites: TenantSite[] = [];
-  selectedSiteId: number | null = null;
+  selectedSiteId: string | null = null;
 
   snapshot: PlcSnapshot | null = null;
   tags: DiscoveredTag[] = [];
