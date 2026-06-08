@@ -30,7 +30,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   tenant: undefined | Tenant;
   sites: Site[] = [];
-  private subscribedSites: { tenantId: number; siteId: number }[] = [];
+  private subscribedSites: { tenantId: number; siteId: string }[] = [];
   layout: 'grid' | 'list' = 'grid';
   sortBy: 'name' | 'site_id' = 'name';
   sortMenuItems: MenuItem[] = [

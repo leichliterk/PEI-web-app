@@ -23,7 +23,7 @@ import { UIChart } from 'primeng/chart';
 export class SiteComponent implements OnInit, OnDestroy {
   @ViewChild('snapshotChart') snapshotChart?: UIChart;
 
-  siteId: number | null = null;
+  siteId: string | null = null;
   siteData: Site | null = null;
   loading: boolean = true;
   connectedAt: Date | null = null;
@@ -103,7 +103,7 @@ export class SiteComponent implements OnInit, OnDestroy {
     } else {
       // Fallback: get site ID from route params
       this.route.params.subscribe(params => {
-        this.siteId = +params['id'];
+        this.siteId = params['id'];
         this.loadSiteData();
         this.subscribeToStatusUpdates();
         this.loadUptimeData();
@@ -289,7 +289,7 @@ export class SiteComponent implements OnInit, OnDestroy {
 
     // Fallback to mock data if no state was passed
     this.siteData = {
-      site_id: this.siteId,
+      site_id: this.siteId!,
       name: `Site ${this.siteId}`,
       connection_status: 'offline'
     };
