@@ -67,6 +67,14 @@
                  style="font-size:0.55rem; bottom:6px; right:4px; pointer-events:none; color: var(--p-text-color)">
               </i>
             </div>
+            <p-button
+              icon="pi pi-building"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              (onClick)="navigateToSiteAdmin()"
+              aria-label="Site Administration">
+            </p-button>
           }
           <!-- Notification Bell -->
           <div class="relative">

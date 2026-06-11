@@ -1,0 +1,241 @@
+<p-toast></p-toast>
+<p-confirmpopup></p-confirmpopup>
+
+<div class="max-w-4xl mx-auto py-8 px-4">
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold m-0">Site Administration</h2>
+      <p class="text-muted-color mt-1 mb-0">Manage sites for this tenant</p>
+    </div>
+    <p-button
+      label="Add Site"
+      icon="pi pi-plus"
+      styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700 px-4 py-2"
+      (onClick)="openCreateDialog()">
+    </p-button>
+  </div>
+
+  <!-- Active Sites Table -->
+  <p-table
+    [value]="sites"
+    [loading]="loading"
+    size="small"
+    [tableStyle]="{'min-width': '100%'}">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 200px">Name</th>
+        <th style="width: 120px">Status</th>
+        <th style="width: 140px" class="text-center">CARB Certified</th>
+        <th style="width: 120px" class="text-right">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-site>
+      <tr>
+        <td class="font-medium">{{ site.name }}</td>
+        <td>
+          <p-tag
+            [value]="site.status | titlecase"
+            [severity]="statusSeverity(site.status)">
+          </p-tag>
+        </td>
+        <td class="text-center">
+          <p-toggleswitch
+            [(ngModel)]="site.carb_certified"
+            (onChange)="onCarbToggle(site)">
+          </p-toggleswitch>
+        </td>
+        <td class="text-right">
+          <div class="flex justify-end gap-1">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              pTooltip="Edit"
+              (onClick)="openEditDialog(site)">
+            </p-button>
+            <p-button
+              icon="pi pi-inbox"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              pTooltip="Archive"
+              (onClick)="confirmArchive($event, site)">
+            </p-button>
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              size="small"
+              pTooltip="Delete"
+              (onClick)="openDeleteDialog(site)">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="empty">
+      @if (!loading) {
+        <tr>
+          <td colspan="4" class="text-center py-8 text-muted-color">No active sites.</td>
+        </tr>
+      }
+    </ng-template>
+  </p-table>
+
+  <!-- Archived Sites -->
+  @if (archivedSites.length > 0) {
+    <div class="mt-8">
+      <button
+        class="flex items-center gap-2 text-sm font-medium text-muted-color hover:text-color mb-3 transition-colors"
+        (click)="showArchived = !showArchived">
+        <i class="pi" [class.pi-chevron-right]="!showArchived" [class.pi-chevron-down]="showArchived"></i>
+        Archived Sites ({{ archivedSites.length }})
+      </button>
+
+      @if (showArchived) {
+        <p-table [value]="archivedSites" size="small" [tableStyle]="{'min-width': '100%'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Name</th>
+              <th style="width: 120px">Status</th>
+              <th style="width: 140px" class="text-center">CARB Certified</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-site>
+            <tr class="opacity-60">
+              <td class="font-medium">{{ site.name }}</td>
+              <td>
+                <p-tag [value]="site.status | titlecase" [severity]="statusSeverity(site.status)"></p-tag>
+              </td>
+              <td class="text-center">
+                <i class="pi" [class.pi-check-circle]="site.carb_certified" [class.pi-circle]="!site.carb_certified"
+                   [class.text-green-500]="site.carb_certified" [class.text-muted-color]="!site.carb_certified"></i>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Create Dialog -->
+<p-dialog
+  [(visible)]="createDialogVisible"
+  header="Add New Site"
+  [modal]="true"
+  [style]="{'width': '400px'}"
+  [resizable]="false"
+  [draggable]="false">
+
+  <div class="flex flex-col gap-4 py-2">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">Site Name</label>
+      <input
+        pInputText
+        [(ngModel)]="createForm.name"
+        placeholder="e.g. Cumberland 12"
+        class="w-full" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">Site ID</label>
+      <input
+        pInputText
+        [(ngModel)]="createForm.site_id"
+        placeholder="e.g. cumberland-12"
+        class="w-full"
+        (keyup.enter)="createSite()" />
+    </div>
+    <span class="text-xs text-muted-color">Status defaults to Offline.</span>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [text]="true" styleClass="px-4 py-2" (onClick)="createDialogVisible = false"></p-button>
+    <p-button
+      label="Create Site"
+      icon="pi pi-check"
+      styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700 px-4 py-2"
+      [disabled]="!createForm.name.trim() || !createForm.site_id.trim()"
+      [loading]="createSaving"
+      (onClick)="createSite()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Edit Dialog -->
+<p-dialog
+  [(visible)]="editDialogVisible"
+  header="Edit Site"
+  [modal]="true"
+  [style]="{'width': '400px'}"
+  [resizable]="false"
+  [draggable]="false">
+
+  <div class="flex flex-col gap-4 py-2">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">Site Name</label>
+      <input pInputText [(ngModel)]="editForm.name" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium">Status</label>
+      <p-select
+        [(ngModel)]="editForm.status"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [style]="{'width': '100%'}">
+      </p-select>
+    </div>
+    @if (editingSite) {
+      <div class="text-xs text-muted-color">Site ID: {{ editingSite.site_id }}</div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [text]="true" styleClass="px-4 py-2" (onClick)="editDialogVisible = false"></p-button>
+    <p-button
+      label="Save"
+      icon="pi pi-check"
+      styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700 px-4 py-2"
+      [disabled]="!editForm.name.trim()"
+      [loading]="editSaving"
+      (onClick)="saveEdit()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Delete Confirmation Dialog -->
+<p-dialog
+  [(visible)]="deleteDialogVisible"
+  header="Delete Site"
+  [modal]="true"
+  [style]="{'width': '380px'}"
+  [resizable]="false"
+  [draggable]="false">
+
+  <div class="py-2">
+    @if (siteToDelete) {
+      <p class="m-0">Are you sure you want to permanently delete <strong>{{ siteToDelete.name }}</strong>?</p>
+      <p class="mt-2 mb-0 text-sm text-muted-color">This cannot be undone. Consider archiving instead.</p>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [text]="true" styleClass="px-4 py-2" (onClick)="deleteDialogVisible = false"></p-button>
+    <p-button
+      label="Delete"
+      icon="pi pi-trash"
+      severity="danger"
+      styleClass="px-4 py-2"
+      [loading]="deleteInProgress"
+      (onClick)="confirmDelete()">
+    </p-button>
+  </ng-template>
+</p-dialog>
