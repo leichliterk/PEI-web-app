@@ -201,6 +201,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.navigate(['/scada']);
   }
 
+  navigateToSiteAdmin() {
+    this.router.navigate(['/site-admin']);
+  }
+
   navigateToReports() {
     this.router.navigate(['/reports']);
   }
