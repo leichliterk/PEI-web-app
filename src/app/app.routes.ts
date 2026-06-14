@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 import { SiteComponent } from './components/site/site.component';
 import { HomeComponent } from './components/home/home.component';
-import { SettingsComponent } from './components/settings/settings.component';
-import { AdminComponent } from './components/admin/admin.component';
-import { ReportsComponent } from './components/reports/reports.component';
+import { SettingsNotificationsComponent } from './components/settings-notifications/settings-notifications.component';
+import { SiteReleaseMgmtComponent } from './components/site-release-mgmt/site-release-mgmt.component';
+import { DailyDestructionReportComponent } from './components/daily-destruction-report/daily-destruction-report.component';
 import { ScadaComponent } from './components/scada/scada.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
@@ -15,9 +15,9 @@ import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-poli
 export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   { path: 'site/:id', component: SiteComponent, canActivate: [authGuard] },
-  { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
-  { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
-  { path: 'reports', component: ReportsComponent, canActivate: [authGuard] },
+  { path: 'settings', component: SettingsNotificationsComponent, canActivate: [authGuard] },
+  { path: 'site-release-mgmt', component: SiteReleaseMgmtComponent, canActivate: [adminGuard] },
+  { path: 'daily-destruction-report', component: DailyDestructionReportComponent, canActivate: [authGuard] },
   { path: 'scada', component: ScadaComponent, canActivate: [authGuard] },
   { path: 'site-management', component: SiteManagementComponent, canActivate: [adminGuard] },
   { path: 'site-admin', component: SiteAdminComponent, canActivate: [adminGuard] },

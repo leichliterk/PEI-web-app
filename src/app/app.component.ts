@@ -35,6 +35,10 @@ export class AppComponent implements OnInit, OnDestroy {
   unreadCount: number = 0;
   notifications: AppNotification[] = [];
   isAdmin: boolean = false;
+  sidebarCollapsed: boolean = false;
+  settingsExpanded: boolean = false;
+  adminExpanded: boolean = false;
+  reportsExpanded: boolean = false;
 
   private unreadSub?: Subscription;
   private notificationsSub?: Subscription;
@@ -190,7 +194,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   navigateToAdmin() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/site-release-mgmt']);
   }
 
   navigateToSiteManagement() {
@@ -206,6 +210,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   navigateToReports() {
-    this.router.navigate(['/reports']);
+    this.router.navigate(['/daily-destruction-report']);
   }
 }

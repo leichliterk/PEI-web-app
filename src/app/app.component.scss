@@ -1,5 +1,168 @@
-// Styles converted to Tailwind CSS classes in the template
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
 
-:host ::ng-deep .p-toolbar {
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 256px;
+  height: 100vh;
+  background: var(--p-surface-0);
+  border-right: 1px solid var(--p-surface-200);
+  transition: width 0.25s ease;
+  overflow: hidden;
+
+  &--collapsed {
+    width: 64px;
+  }
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 64px;
+  padding: 0 0.75rem;
   background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+
+  .sidebar--collapsed & {
+    flex-direction: column;
+    justify-content: center;
+    height: auto;
+    padding: 0.5rem 0;
+    gap: 0.25rem;
+  }
+}
+
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--p-surface-200);
+  margin: 0.5rem 1rem;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--p-text-color);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--p-surface-100);
+  }
+
+  &--collapsed {
+    justify-content: center;
+    padding: 0.625rem 0;
+  }
+
+  &--child {
+    padding-left: 2.75rem;
+    font-size: 0.85rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.sidebar-item-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+}
+
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--p-surface-200);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(21, 101, 192, 0.15);
+  color: #1565c0;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+// ── Main content ─────────────────────────────────────────────────────────────
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: auto;
+  min-width: 0;
 }

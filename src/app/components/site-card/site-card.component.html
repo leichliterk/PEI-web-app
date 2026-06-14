@@ -1,5 +1,5 @@
 @if (layout === 'grid') {
-  <p-card class="site-card cursor-pointer" [class.flare-alert]="!offline && flareStatus === 'shutdown'" (click)="navigateToSite()">
+  <p-card class="site-card cursor-pointer" [class.flare-alert]="siteStatus === 'shutdown'" (click)="navigateToSite()">
     <ng-template pTemplate="header">
       <div class="flex justify-between items-start p-4 pb-3">
         <div>
@@ -8,15 +8,9 @@
         </div>
         <div class="flex flex-col items-end gap-1">
           <div class="flex gap-2">
-            <!-- Connection indicator -->
             <p-badge
-              [severity]="offline ? 'secondary' : 'success'"
-              [value]="offline ? 'Offline' : 'Online'">
-            </p-badge>
-            <!-- Flare status indicator -->
-            <p-badge
-              [severity]="offline ? 'secondary' : (flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger'))"
-              [value]="offline ? '--' : (flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown'))">
+              [severity]="siteStatus === 'offline' ? 'secondary' : siteStatus === 'running' ? 'success' : siteStatus === 'alarm' ? 'warn' : 'danger'"
+              [value]="siteStatus === 'offline' ? 'Offline' : siteStatus === 'running' ? 'Running' : siteStatus === 'alarm' ? 'Alarm' : 'Shutdown'">
             </p-badge>
           </div>
           <p class="text-xs text-muted-color m-0">{{ (plcSnapshot?.timestamp || reading?.timestamp) ? ((plcSnapshot?.timestamp || reading!.timestamp) | date:'M/d h:mm a') : '--' }}</p>
@@ -59,7 +53,7 @@
     </div>
   </p-card>
 } @else {
-  <p-card class="site-card cursor-pointer w-full" [class.flare-alert]="!offline && flareStatus === 'shutdown'" (click)="navigateToSite()">
+  <p-card class="site-card cursor-pointer w-full" [class.flare-alert]="siteStatus === 'shutdown'" (click)="navigateToSite()">
     <div class="flex justify-between items-center gap-4">
       <div class="w-[200px] shrink-0">
         <p class="text-lg font-semibold m-0">{{ siteData.name }}</p>
@@ -97,15 +91,9 @@
         </div>
       </div>
       <div class="w-[130px] shrink-0 flex flex-col items-end gap-1">
-        <!-- Connection indicator -->
         <p-badge
-          [severity]="offline ? 'secondary' : 'success'"
-          [value]="offline ? 'Offline' : 'Online'">
-        </p-badge>
-        <!-- Flare status indicator -->
-        <p-badge
-          [severity]="offline ? 'secondary' : (flareStatus === 'running' ? 'success' : (flareStatus === 'alarm' ? 'warn' : 'danger'))"
-          [value]="offline ? '--' : (flareStatus === 'running' ? 'Running' : (flareStatus === 'alarm' ? 'Alarm' : 'Shutdown'))">
+          [severity]="siteStatus === 'offline' ? 'secondary' : siteStatus === 'running' ? 'success' : siteStatus === 'alarm' ? 'warn' : 'danger'"
+          [value]="siteStatus === 'offline' ? 'Offline' : siteStatus === 'running' ? 'Running' : siteStatus === 'alarm' ? 'Alarm' : 'Shutdown'">
         </p-badge>
       </div>
     </div>

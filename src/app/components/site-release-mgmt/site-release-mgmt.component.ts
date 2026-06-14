@@ -31,7 +31,7 @@ export interface OtaRelease {
 }
 
 @Component({
-  selector: 'app-admin',
+  selector: 'app-site-release-mgmt',
   standalone: true,
   imports: [
     CommonModule,
@@ -47,10 +47,10 @@ export interface OtaRelease {
     ProgressBarModule,
   ],
   providers: [MessageService],
-  templateUrl: './admin.component.html',
-  styleUrl: './admin.component.scss'
+  templateUrl: './site-release-mgmt.component.html',
+  styleUrl: './site-release-mgmt.component.scss'
 })
-export class AdminComponent implements OnInit {
+export class SiteReleaseMgmtComponent implements OnInit {
   releases: OtaRelease[] = [];
   loading = true;
 
