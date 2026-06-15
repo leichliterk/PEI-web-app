@@ -5,18 +5,7 @@
         <h3 class="text-xl font-semibold m-0">{{ site.name }}</h3>
         <p class="text-muted-color text-sm m-0">Site ID: {{ site.site_id }}</p>
       </div>
-      <p class="text-xs text-muted-color m-0 mt-1">
-        {{ site.last_seen ? (site.last_seen | date:'M/d, h:mm a') : '—' }}
-      </p>
-    </div>
-  </ng-template>
-
-  <div class="flex flex-col gap-3">
-
-    <!-- Service status -->
-    <div class="flex justify-between items-center">
-      <span class="text-sm text-muted-color">Service</span>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 mt-1">
         @if (isOnline) {
           <p-button
             label="Restart"
@@ -31,36 +20,23 @@
         <p-badge [value]="serviceLabel" [severity]="serviceSeverity"></p-badge>
       </div>
     </div>
+  </ng-template>
 
-    <!-- App version -->
-    <div class="flex justify-between items-center">
-      <span class="text-sm text-muted-color">App Version</span>
+  <div class="flex justify-between items-center">
+    <span class="text-sm text-muted-color">App Version</span>
+    <div class="flex items-center gap-2">
       <span class="text-sm font-medium">{{ site.app_version ?? '—' }}</span>
+      @if (hasUpdate && isOnline) {
+        <p-button
+          label="Update"
+          icon="pi pi-download"
+          severity="warn"
+          size="small"
+          [loading]="installLoading"
+          [disabled]="!isOnline"
+          (onClick)="installOta.emit(site.site_id)">
+        </p-button>
+      }
     </div>
-
-    <!-- OTA update -->
-    <div class="flex justify-between items-center">
-      <span class="text-sm text-muted-color">OTA Update</span>
-      <div class="flex items-center gap-2">
-        @if (hasUpdate) {
-          <p-button
-            [label]="'Install v' + latestOtaVersion"
-            icon="pi pi-download"
-            severity="warn"
-            size="small"
-            [text]="true"
-            [loading]="installLoading"
-            [disabled]="!isOnline"
-            (onClick)="installOta.emit(site.site_id)">
-          </p-button>
-          <p-badge value="Available" severity="warn"></p-badge>
-        } @else if (latestOtaVersion && site.app_version) {
-          <p-badge value="Up to date" severity="success"></p-badge>
-        } @else {
-          <span class="text-sm text-muted-color">—</span>
-        }
-      </div>
-    </div>
-
   </div>
 </p-card>

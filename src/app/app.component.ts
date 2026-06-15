@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
@@ -9,6 +9,7 @@ import { MenuItem } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { UserService } from './services/user.service';
 import { WebSocketService } from './services/websocket.service';
 import { TenantService } from './services/tenant.service';
@@ -18,7 +19,7 @@ import { environment } from '../environments/environment';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, ToolbarModule, ButtonModule, CommonModule, MenuModule, DialogModule, PopoverModule],
+    imports: [RouterOutlet, ToolbarModule, ButtonModule, CommonModule, MenuModule, DialogModule, PopoverModule, BreadcrumbModule],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
@@ -36,6 +37,8 @@ export class AppComponent implements OnInit, OnDestroy {
   notifications: AppNotification[] = [];
   isAdmin: boolean = false;
   sidebarCollapsed: boolean = false;
+  breadcrumbItems: MenuItem[] = [];
+  readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/home' };
   settingsExpanded: boolean = false;
   adminExpanded: boolean = false;
   reportsExpanded: boolean = false;
@@ -43,6 +46,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private unreadSub?: Subscription;
   private notificationsSub?: Subscription;
   private appUserSub?: Subscription;
+  private routerSub?: Subscription;
 
   @ViewChild('profileMenu') profileMenu!: Menu;
   @ViewChild('notificationPanel') notificationPanel!: Popover;
@@ -109,6 +113,11 @@ export class AppComponent implements OnInit, OnDestroy {
       this.notifications = ns;
     });
 
+    this.routerSub = this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe(e => this.updateBreadcrumb((e as NavigationEnd).urlAfterRedirects));
+    this.updateBreadcrumb(this.router.url);
+
     this.profileMenuItems = [
       {
         label: 'My Account',
@@ -138,6 +147,28 @@ export class AppComponent implements OnInit, OnDestroy {
     this.unreadSub?.unsubscribe();
     this.notificationsSub?.unsubscribe();
     this.appUserSub?.unsubscribe();
+    this.routerSub?.unsubscribe();
+  }
+
+  private updateBreadcrumb(url: string): void {
+    const path = url.split('?')[0];
+    const routeMap: Record<string, MenuItem[]> = {
+      '/home':                    [],
+      '/settings':                [{ label: 'Settings' }, { label: 'Notifications' }],
+      '/daily-destruction-report':[{ label: 'Reports' }, { label: 'Destruction Report' }],
+      '/scada':                   [{ label: 'SCADA' }],
+      '/site-release-mgmt':       [{ label: 'Administration' }, { label: 'Site Agent Mgmt.' }],
+      '/site-management':         [{ label: 'Administration' }, { label: 'Site Management' }],
+      '/tenant-admin':            [{ label: 'Administration' }, { label: 'Tenant Administration' }],
+      '/delete-account':          [{ label: 'My Account' }],
+      '/privacy-policy':          [{ label: 'Privacy Policy' }],
+    };
+    if (path.startsWith('/site/')) {
+      const id = path.split('/')[2];
+      this.breadcrumbItems = [{ label: id }];
+      return;
+    }
+    this.breadcrumbItems = routeMap[path] ?? [];
   }
 
   toggleProfileMenu(event: Event) {
@@ -206,7 +237,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   navigateToSiteAdmin() {
-    this.router.navigate(['/site-admin']);
+    this.router.navigate(['/tenant-admin']);
   }
 
   navigateToReports() {

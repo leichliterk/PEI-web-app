@@ -72,19 +72,19 @@
             }
           </button>
           @if (adminExpanded && !sidebarCollapsed) {
-            <button class="sidebar-item sidebar-item--child" (click)="navigateToAdmin()" title="Site Agent Mgmt.">
-              <i class="pi pi-microchip sidebar-item-icon"></i>
-              <span>Site Agent Mgmt.</span>
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteAdmin()" title="Tenant Administration">
+              <i class="pi pi-building sidebar-item-icon"></i>
+              <span>Tenant Administration</span>
             </button>
             <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteManagement()" title="Site Management">
               <i class="pi pi-map-marker sidebar-item-icon"></i>
               <span>Site Management</span>
             </button>
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToAdmin()" title="Site Agent Mgmt.">
+              <i class="pi pi-microchip sidebar-item-icon"></i>
+              <span>Site Agent Mgmt.</span>
+            </button>
           }
-          <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="navigateToSiteAdmin()" title="Site Administration">
-            <i class="pi pi-building sidebar-item-icon"></i>
-            @if (!sidebarCollapsed) { <span>Site Administration</span> }
-          </button>
         }
       </nav>
 
@@ -125,7 +125,8 @@
         {{ environment.env_name }}
       </div>
     }
-    <main class="px-8 py-12 flex justify-center items-start">
+    <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="border-none rounded-none border-b border-surface-200 px-6"></p-breadcrumb>
+    <main class="px-8 pt-0 pb-12 flex justify-center items-start">
       <router-outlet></router-outlet>
     </main>
   </div>

@@ -8,7 +8,7 @@ import { ScadaComponent } from './components/scada/scada.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { SiteManagementComponent } from './components/site-management/site-management.component';
-import { SiteAdminComponent } from './components/site-admin/site-admin.component';
+import { TenantAdminComponent } from './components/tenant-admin/tenant-admin.component';
 import { DeleteAccountComponent } from './components/delete-account/delete-account.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 
@@ -20,7 +20,7 @@ export const routes: Routes = [
   { path: 'daily-destruction-report', component: DailyDestructionReportComponent, canActivate: [authGuard] },
   { path: 'scada', component: ScadaComponent, canActivate: [authGuard] },
   { path: 'site-management', component: SiteManagementComponent, canActivate: [adminGuard] },
-  { path: 'site-admin', component: SiteAdminComponent, canActivate: [adminGuard] },
+  { path: 'tenant-admin', component: TenantAdminComponent, canActivate: [adminGuard] },
   { path: 'delete-account', component: DeleteAccountComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' }

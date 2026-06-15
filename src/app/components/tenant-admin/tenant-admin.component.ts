@@ -26,7 +26,7 @@ export interface AdminSite {
 }
 
 @Component({
-  selector: 'app-site-admin',
+  selector: 'app-tenant-admin',
   standalone: true,
   imports: [
     CommonModule,
@@ -43,10 +43,10 @@ export interface AdminSite {
     ProgressSpinnerModule,
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './site-admin.component.html',
-  styleUrl: './site-admin.component.scss',
+  templateUrl: './tenant-admin.component.html',
+  styleUrl: './tenant-admin.component.scss',
 })
-export class SiteAdminComponent implements OnInit {
+export class TenantAdminComponent implements OnInit {
   sites: AdminSite[] = [];
   archivedSites: AdminSite[] = [];
   loading = true;

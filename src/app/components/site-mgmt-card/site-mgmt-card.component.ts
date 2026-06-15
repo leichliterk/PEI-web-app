@@ -30,8 +30,13 @@ export class SiteMgmtCardComponent {
   @Output() installOta = new EventEmitter<string>();
 
   get hasUpdate(): boolean {
-    return !!this.site.app_version && !!this.latestOtaVersion
-      && this.site.app_version !== this.latestOtaVersion;
+    if (!this.site.app_version || !this.latestOtaVersion) return false;
+    const parse = (v: string) => v.split('.').map(n => parseInt(n, 10));
+    const [aMaj, aMin, aPatch] = parse(this.latestOtaVersion);
+    const [bMaj, bMin, bPatch] = parse(this.site.app_version);
+    if (aMaj !== bMaj) return aMaj > bMaj;
+    if (aMin !== bMin) return aMin > bMin;
+    return aPatch > bPatch;
   }
 
   get isOnline(): boolean {
