@@ -50,7 +50,7 @@ const DEFAULT_SETTINGS: ReportSettings = {
 };
 
 @Component({
-  selector: 'app-reports',
+  selector: 'app-daily-destruction-report',
   standalone: true,
   imports: [
     CommonModule,
@@ -65,10 +65,10 @@ const DEFAULT_SETTINGS: ReportSettings = {
     SelectButtonModule,
   ],
   providers: [MessageService],
-  templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss'
+  templateUrl: './daily-destruction-report.component.html',
+  styleUrl: './daily-destruction-report.component.scss'
 })
-export class ReportsComponent implements OnInit {
+export class DailyDestructionReportComponent implements OnInit {
   startDate: Date;
   endDate: Date;
 

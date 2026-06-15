@@ -1,122 +1,136 @@
-<div class="min-h-screen  relative">
-  <!-- Subtle texture overlay -->
-  <div class="absolute inset-0  pointer-events-none"></div>
+<div class="app-shell">
 
-  <p-toolbar class="bg-primary-500 border-none rounded-none shadow-md">
-    <ng-template pTemplate="start">
-      <h1 class="m-0 text-2xl font-semibold cursor-pointer" (click)="navigateToHome()">PEI Data Services</h1>
-      @if (!environment.production) {
-        <span class="ml-4 text-red-500 font-bold uppercase">{{ environment.env_name }}</span>
+  <!-- Sidebar -->
+  <div class="sidebar shadow-md" [class.sidebar--collapsed]="sidebarCollapsed">
+
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+      @if (!sidebarCollapsed) {
+        <div class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" (click)="navigateToHome()">
+          <div class="bg-white rounded-lg p-1 flex-shrink-0" style="line-height:0;">
+            <img src="icon_clean.svg" alt="PEI" style="height:32px; width:auto;">
+          </div>
+          <span class="text-white font-semibold text-lg truncate">PEI Data Services</span>
+        </div>
+      } @else {
+        <div class="flex-1 flex justify-center cursor-pointer" (click)="navigateToHome()">
+          <div class="bg-white rounded-lg p-1" style="line-height:0;">
+            <img src="icon_clean.svg" alt="PEI" style="height:32px; width:auto;">
+          </div>
+        </div>
       }
-    </ng-template>
+      <button class="sidebar-collapse-btn" (click)="sidebarCollapsed = !sidebarCollapsed" [title]="sidebarCollapsed ? 'Expand' : 'Collapse'">
+        <i class="pi" [class.pi-chevron-left]="!sidebarCollapsed" [class.pi-chevron-right]="sidebarCollapsed"></i>
+      </button>
+    </div>
 
-    <ng-template pTemplate="end">
-      <div class="flex gap-2 items-center">
-        @if (isAuthenticated$ | async) {
-          <p-button
-            icon="pi pi-home"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            (onClick)="navigateToHome()"
-            aria-label="Home">
-          </p-button>
-          <p-button
-            icon="pi pi-cog"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            (onClick)="navigateToSettings()"
-            aria-label="Settings">
-          </p-button>
-          <p-button
-            icon="pi pi-chart-bar"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            (onClick)="navigateToReports()"
-            aria-label="Reports">
-          </p-button>
-          <p-button
-            icon="pi pi-desktop"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            (onClick)="navigateToScada()"
-            aria-label="SCADA">
-          </p-button>
-          @if (isAdmin) {
-            <p-button
-              icon="pi pi-shield"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              (onClick)="navigateToAdmin()"
-              aria-label="Administration">
-            </p-button>
-            <div class="relative" style="width:40px;height:40px;">
-              <p-button
-                icon="pi pi-map-marker"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                (onClick)="navigateToSiteManagement()"
-                aria-label="Site Management">
-              </p-button>
-              <i class="pi pi-cog absolute"
-                 style="font-size:0.55rem; bottom:6px; right:4px; pointer-events:none; color: var(--p-text-color)">
-              </i>
-            </div>
-            <p-button
-              icon="pi pi-building"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              (onClick)="navigateToSiteAdmin()"
-              aria-label="Site Administration">
-            </p-button>
+    @if (isAuthenticated$ | async) {
+      <!-- Nav Items -->
+      <nav class="sidebar-nav">
+        <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="navigateToHome()" title="Home">
+          <i class="pi pi-home sidebar-item-icon"></i>
+          @if (!sidebarCollapsed) { <span>Home</span> }
+        </button>
+        <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="sidebarCollapsed ? navigateToSettings() : (settingsExpanded = !settingsExpanded)" title="Settings">
+          <i class="pi pi-cog sidebar-item-icon"></i>
+          @if (!sidebarCollapsed) {
+            <span class="flex-1">Settings</span>
+            <i class="pi text-xs" [class.pi-chevron-down]="settingsExpanded" [class.pi-chevron-right]="!settingsExpanded"></i>
           }
-          <!-- Notification Bell -->
-          <div class="relative">
-            <p-button
-              icon="pi pi-bell"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              (onClick)="toggleNotifications($event)"
-              aria-label="Notifications">
-            </p-button>
+        </button>
+        @if (settingsExpanded && !sidebarCollapsed) {
+          <button class="sidebar-item sidebar-item--child" (click)="navigateToSettings()" title="Notifications">
+            <i class="pi pi-bell sidebar-item-icon"></i>
+            <span>Notifications</span>
+          </button>
+        }
+        <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="sidebarCollapsed ? navigateToReports() : (reportsExpanded = !reportsExpanded)" title="Reports">
+          <i class="pi pi-chart-bar sidebar-item-icon"></i>
+          @if (!sidebarCollapsed) {
+            <span class="flex-1">Reports</span>
+            <i class="pi text-xs" [class.pi-chevron-down]="reportsExpanded" [class.pi-chevron-right]="!reportsExpanded"></i>
+          }
+        </button>
+        @if (reportsExpanded && !sidebarCollapsed) {
+          <button class="sidebar-item sidebar-item--child" (click)="navigateToReports()" title="Destruction Report">
+            <i class="pi pi-fire sidebar-item-icon"></i>
+            <span>Destruction Report</span>
+          </button>
+        }
+        <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="navigateToScada()" title="SCADA">
+          <i class="pi pi-desktop sidebar-item-icon"></i>
+          @if (!sidebarCollapsed) { <span>SCADA</span> }
+        </button>
+
+        @if (isAdmin) {
+          <div class="sidebar-divider"></div>
+          <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="sidebarCollapsed ? navigateToAdmin() : (adminExpanded = !adminExpanded)" title="Administration">
+            <i class="pi pi-shield sidebar-item-icon"></i>
+            @if (!sidebarCollapsed) {
+              <span class="flex-1">Administration</span>
+              <i class="pi text-xs" [class.pi-chevron-down]="adminExpanded" [class.pi-chevron-right]="!adminExpanded"></i>
+            }
+          </button>
+          @if (adminExpanded && !sidebarCollapsed) {
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteAdmin()" title="Tenant Administration">
+              <i class="pi pi-building sidebar-item-icon"></i>
+              <span>Tenant Administration</span>
+            </button>
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteManagement()" title="Site Management">
+              <i class="pi pi-map-marker sidebar-item-icon"></i>
+              <span>Site Management</span>
+            </button>
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToAdmin()" title="Site Agent Mgmt.">
+              <i class="pi pi-microchip sidebar-item-icon"></i>
+              <span>Site Agent Mgmt.</span>
+            </button>
+          }
+        }
+      </nav>
+
+      <!-- Bottom: Notifications + User -->
+      <div class="sidebar-bottom">
+        <!-- Notifications -->
+        <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="toggleNotifications($event)" title="Notifications">
+          <div class="relative flex-shrink-0">
+            <i class="pi pi-bell sidebar-item-icon"></i>
             @if (unreadCount > 0) {
-              <span class="absolute top-0 right-0 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white font-bold pointer-events-none" style="font-size: 10px; line-height: 1;">
-                {{ unreadCount > 9 ? '9+' : unreadCount }}
-              </span>
+              <span class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
             }
           </div>
-          @if (userInitials) {
-            <div
-              class="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 text-white font-semibold text-sm cursor-pointer transition-colors duration-200 select-none hover:bg-white/30"
-              (click)="toggleProfileMenu($event)"
-              aria-label="Profile Menu">
-              {{ userInitials }}
-            </div>
-            <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
-          }
-        } @else {
-          <p-button
-            label="Log In"
-            icon="pi pi-sign-in"
-            (onClick)="login()"
-            severity="secondary"
-            [outlined]="true">
-          </p-button>
+          @if (!sidebarCollapsed) { <span>Notifications</span> }
+        </button>
+
+        <!-- User -->
+        @if (userInitials) {
+          <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="toggleProfileMenu($event)" [title]="sidebarCollapsed ? userInitials : 'My Account'">
+            <div class="user-avatar flex-shrink-0">{{ userInitials }}</div>
+            @if (!sidebarCollapsed) { <span>My Account</span> }
+          </button>
+          <p-menu #profileMenu [model]="profileMenuItems" [popup]="true" appendTo="body"></p-menu>
         }
       </div>
-    </ng-template>
-  </p-toolbar>
 
-  <main class="px-8 py-12 flex justify-center items-start min-h-[calc(100vh-140px)] relative z-10">
-    <router-outlet></router-outlet>
-  </main>
+    } @else {
+      <div class="p-4">
+        <p-button label="Log In" icon="pi pi-sign-in" (onClick)="login()" severity="secondary" [outlined]="true" styleClass="w-full"></p-button>
+      </div>
+    }
+  </div>
+
+  <!-- Main Content -->
+  <div class="app-content">
+    @if (!environment.production) {
+      <div class="bg-yellow-100 text-red-600 font-bold uppercase text-center py-1 text-sm tracking-widest">
+        {{ environment.env_name }}
+      </div>
+    }
+    <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="border-none rounded-none border-b border-surface-200 px-6"></p-breadcrumb>
+    <main class="px-8 pt-0 pb-12 flex justify-center items-start">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
 </div>
 
 <!-- Notification Panel -->
