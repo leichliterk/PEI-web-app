@@ -24,7 +24,8 @@ export class SiteCardComponent {
     return this.siteData.connection_status !== 'online';
   }
 
-  get flareStatus(): 'running' | 'alarm' | 'shutdown' {
+  get siteStatus(): 'offline' | 'running' | 'shutdown' | 'alarm' {
+    if (this.siteData.connection_status !== 'online') return 'offline';
     if (this.reading?.flare_status) return this.reading.flare_status;
     if (!this.reading || this.reading.flr_flow === 0) return 'shutdown';
     return 'running';

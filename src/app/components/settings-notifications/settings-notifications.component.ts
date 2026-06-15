@@ -28,7 +28,7 @@ interface SiteGroup {
 }
 
 @Component({
-  selector: 'app-settings',
+  selector: 'app-settings-notifications',
   standalone: true,
   imports: [
     CommonModule,
@@ -44,10 +44,10 @@ interface SiteGroup {
     DividerModule,
   ],
   providers: [MessageService],
-  templateUrl: './settings.component.html',
-  styleUrl: './settings.component.scss',
+  templateUrl: './settings-notifications.component.html',
+  styleUrl: './settings-notifications.component.scss',
 })
-export class SettingsComponent implements OnInit, OnDestroy {
+export class SettingsNotificationsComponent implements OnInit, OnDestroy {
   private sitesSub?: Subscription;
 
   // ── Rules list ───────────────────────────────────────────────────────────
