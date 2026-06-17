@@ -71,23 +71,41 @@ export class SettingsNotificationsComponent implements OnInit, OnDestroy {
   ruleToDelete: NotificationRule | null = null;
   deleteInProgress = false;
 
-  // ── Inline edit ──────────────────────────────────────────────────────────
+  // ── Inline edit (plc_tag only) ───────────────────────────────────────────
   editingRuleId: string | null = null;
   editOperator: RuleOperator = 'gt';
   editThreshold: number | null = null;
   editSubmitting = false;
 
-  // ── Inline draft ─────────────────────────────────────────────────────────
+  // ── Draft state ──────────────────────────────────────────────────────────
   draftVisible = false;
   sites: TenantSite[] = [];
+
+  // Shared
+  draftRuleType: 'plc_tag' | 'site_event' = 'plc_tag';
   draftSite: TenantSite | null = null;
+  submitting = false;
+
+  // PLC tag fields
   draftTags: NotificationTag[] = [];
   draftTagsLoading = false;
   draftTagsError = false;
   draftTag: NotificationTag | null = null;
   draftOperator: RuleOperator = 'gt';
   draftThreshold: number | null = null;
-  submitting = false;
+
+  // Site event fields
+  draftSiteEventTrigger: 'site_online' | 'site_offline' = 'site_online';
+
+  readonly ruleTypeOptions = [
+    { label: 'PLC Tag',    value: 'plc_tag'    },
+    { label: 'Site Event', value: 'site_event' },
+  ];
+
+  readonly siteEventTriggerOptions = [
+    { label: 'Site Online',  value: 'site_online'  },
+    { label: 'Site Offline', value: 'site_offline' },
+  ];
 
   readonly operatorOptions = [
     { label: '>',  value: 'gt'  },
@@ -111,7 +129,11 @@ export class SettingsNotificationsComponent implements OnInit, OnDestroy {
   }
 
   get draftValid(): boolean {
-    return !!this.draftSite && !!this.draftTag && this.draftThreshold != null;
+    if (!this.draftSite) return false;
+    if (this.draftRuleType === 'plc_tag') {
+      return !!this.draftTag && this.draftThreshold != null;
+    }
+    return true; // site_event only needs a site
   }
 
   constructor(
@@ -167,8 +189,8 @@ export class SettingsNotificationsComponent implements OnInit, OnDestroy {
 
   openEdit(rule: NotificationRule): void {
     this.editingRuleId = rule.id;
-    this.editOperator = rule.operator;
-    this.editThreshold = rule.threshold;
+    this.editOperator = rule.operator !== undefined ? rule.operator : 'gt';
+    this.editThreshold = rule.threshold !== undefined ? rule.threshold : null;
   }
 
   cancelEdit(): void {
@@ -213,15 +235,17 @@ export class SettingsNotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Inline draft ─────────────────────────────────────────────────────────
+  // ── Draft ─────────────────────────────────────────────────────────────────
 
   openDraft(): void {
+    this.draftRuleType = 'plc_tag';
     this.draftSite = null;
     this.draftTag = null;
     this.draftTags = [];
     this.draftTagsError = false;
     this.draftOperator = 'gt';
     this.draftThreshold = null;
+    this.draftSiteEventTrigger = 'site_online';
     this.draftVisible = true;
   }
 
@@ -229,15 +253,30 @@ export class SettingsNotificationsComponent implements OnInit, OnDestroy {
     this.draftVisible = false;
   }
 
+  onDraftRuleTypeChanged(): void {
+    // Reset type-specific fields when switching
+    this.draftTag = null;
+    this.draftTags = [];
+    this.draftTagsError = false;
+    this.draftThreshold = null;
+    // Re-load tags if switching back to plc_tag with a site already selected
+    if (this.draftRuleType === 'plc_tag' && this.draftSite) {
+      this.loadDraftTags();
+    }
+  }
+
   onDraftSiteSelected(): void {
     this.draftTag = null;
     this.draftTags = [];
     this.draftTagsError = false;
-    if (!this.draftSite) return;
+    if (this.draftRuleType === 'plc_tag' && this.draftSite) {
+      this.loadDraftTags();
+    }
+  }
 
+  private loadDraftTags(): void {
     const tenantId = this.userService.appUserValue?.tenant_id;
-    if (!tenantId) return;
-
+    if (!tenantId || !this.draftSite) return;
     this.draftTagsLoading = true;
     this.rulesService.getTags(tenantId, this.draftSite.site_id).subscribe({
       next: tags => {
@@ -254,19 +293,32 @@ export class SettingsNotificationsComponent implements OnInit, OnDestroy {
 
   submitDraft(): void {
     const tenantId = this.userService.appUserValue?.tenant_id;
-    if (!tenantId || !this.draftSite || !this.draftTag || this.draftThreshold == null) return;
+    if (!tenantId || !this.draftSite) return;
 
     this.submitting = true;
-    this.rulesService.createRule({
+
+    const basePayload = {
       tenant_id: tenantId,
       site_id: this.draftSite.site_id,
       site_name: this.draftSite.name,
-      tag_name: this.draftTag.name,
-      tag_display_name: this.draftTag.displayName,
-      tag_unit: this.draftTag.unit ?? '',
-      operator: this.draftOperator,
-      threshold: this.draftThreshold,
-    }).subscribe({
+    };
+
+    const obs = this.draftRuleType === 'plc_tag'
+      ? this.rulesService.createRule({
+          ...basePayload,
+          trigger: 'plc_tag',
+          tag_name: this.draftTag!.name,
+          tag_display_name: this.draftTag!.displayName,
+          tag_unit: this.draftTag!.unit ?? '',
+          operator: this.draftOperator,
+          threshold: this.draftThreshold!,
+        })
+      : this.rulesService.createRule({
+          ...basePayload,
+          trigger: this.draftSiteEventTrigger,
+        });
+
+    obs.subscribe({
       next: rule => {
         this.rules = [...this.rules, rule];
         this.draftVisible = false;

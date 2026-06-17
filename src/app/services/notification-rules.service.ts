@@ -4,32 +4,43 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type RuleOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq';
+export type RuleTrigger = 'plc_tag' | 'site_online' | 'site_offline';
 
 export interface NotificationRule {
   id: string;
   tenant_id: number;
   site_id: string;
   site_name: string;
-  tag_name: string;
-  tag_display_name: string;
-  tag_unit: string;
-  operator: RuleOperator;
-  threshold: number;
+  trigger: RuleTrigger;
+  // plc_tag only
+  tag_name?: string;
+  tag_display_name?: string;
+  tag_unit?: string;
+  operator?: RuleOperator;
+  threshold?: number;
   label: string;
   enabled: boolean;
   created_at: string;
 }
 
-export interface CreateRulePayload {
-  tenant_id: number;
-  site_id: string;
-  site_name: string;
-  tag_name: string;
-  tag_display_name: string;
-  tag_unit: string;
-  operator: RuleOperator;
-  threshold: number;
-}
+export type CreateRulePayload =
+  | {
+      tenant_id: number;
+      site_id: string;
+      site_name: string;
+      trigger: 'plc_tag';
+      tag_name: string;
+      tag_display_name: string;
+      tag_unit: string;
+      operator: RuleOperator;
+      threshold: number;
+    }
+  | {
+      tenant_id: number;
+      site_id: string;
+      site_name: string;
+      trigger: 'site_online' | 'site_offline';
+    };
 
 export interface NotificationTag {
   name: string;
