@@ -20,7 +20,7 @@ export const adminGuard: CanActivateFn = () => {
         filter(user => user !== null),
         take(1),
         map(user => {
-          if (user?.role === 'admin') {
+          if (user?.role === 'global_admin' || user?.role === 'administrator') {
             return true;
           }
           router.navigate(['/home']);

@@ -64,7 +64,13 @@ export class UserAdminComponent implements OnInit {
     });
   }
 
-statusSeverity(status: string): 'secondary' | 'success' | 'warn' {
+  roleLabel(role: string): string {
+    if (role === 'global_admin') return 'Global Administrator';
+    if (role === 'administrator') return 'Administrator';
+    return 'User';
+  }
+
+  statusSeverity(status: string): 'secondary' | 'success' | 'warn' {
     if (status === 'active') return 'success';
     if (status === 'pending') return 'warn';
     return 'secondary';

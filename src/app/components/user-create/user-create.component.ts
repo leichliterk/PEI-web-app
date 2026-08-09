@@ -44,11 +44,17 @@ export class UserCreateComponent implements OnInit {
     site_ids: [] as string[],
   };
 
-  readonly roleOptions = [
-    { label: 'User',          value: 'user' },
-    { label: 'Administrator', value: 'administrator' },
-    { label: 'Admin',         value: 'admin' },
+  private static readonly ALL_ROLES = [
+    { label: 'User',                 value: 'user' },
+    { label: 'Administrator',        value: 'administrator' },
+    { label: 'Global Administrator', value: 'global_admin' },
   ];
+
+  get roleOptions() {
+    return this.userService.appUserValue?.role === 'global_admin'
+      ? UserCreateComponent.ALL_ROLES
+      : UserCreateComponent.ALL_ROLES.slice(0, 1);
+  }
 
   private get tenantId(): number | undefined {
     return this.userService.appUserValue?.tenant_id;

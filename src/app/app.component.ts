@@ -102,7 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     this.appUserSub = this.userService.appUser$.subscribe(appUser => {
-      this.isAdmin = appUser?.role === 'admin';
+      this.isAdmin = appUser?.role === 'global_admin' || appUser?.role === 'administrator';
     });
 
     this.unreadSub = this.notificationService.unreadCount$.subscribe(count => {

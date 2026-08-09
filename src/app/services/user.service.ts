@@ -17,7 +17,7 @@ export interface AppUser {
   lname: string;
   email: string;
   auth0_id: string;
-  role: string;
+  role: 'user' | 'administrator' | 'global_admin';
   status: string;
   group: string;
   tenant_id: number;
@@ -48,7 +48,8 @@ export class UserService {
   }
 
   public get isAdmin(): boolean {
-    return this.appUserSubject.value?.role === 'admin';
+    const role = this.appUserSubject.value?.role;
+    return role === 'global_admin' || role === 'administrator';
   }
 
   getInitials(): string {

@@ -35,7 +35,7 @@
       <tr>
         <td class="font-medium">{{ user.fname }} {{ user.lname }}</td>
         <td class="text-muted-color">{{ user.email }}</td>
-        <td>{{ user.role | titlecase }}</td>
+        <td>{{ roleLabel(user.role) }}</td>
         <td>
           <p-tag
             [value]="user.status | titlecase"
