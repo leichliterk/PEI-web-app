@@ -47,7 +47,7 @@ export class UserAdminComponent implements OnInit {
   }
 
   editUser(user: AppUser): void {
-    this.router.navigate(['/user-edit'], { state: { user } });
+    this.router.navigate(['/user-edit'], { state: { user, returnUrl: '/user-admin' } });
   }
 
   ngOnInit(): void {

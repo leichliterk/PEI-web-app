@@ -33,6 +33,7 @@ export class UserEditComponent implements OnInit {
   sites: TenantSite[] = [];
   saving = false;
   user!: AppUser;
+  private returnUrl = '/home';
 
   form = {
     fname:    '',
@@ -79,12 +80,14 @@ export class UserEditComponent implements OnInit {
     private messageService: MessageService,
   ) {
     const nav = this.router.getCurrentNavigation();
-    this.user = nav?.extras?.state?.['user'] ?? history.state?.user;
+    const state = nav?.extras?.state ?? history.state;
+    this.user = state?.['user'];
+    this.returnUrl = state?.['returnUrl'] ?? '/home';
   }
 
   ngOnInit(): void {
     if (!this.user) {
-      this.router.navigate(['/user-admin']);
+      this.router.navigate(['/my-account']);
       return;
     }
 
@@ -134,7 +137,7 @@ export class UserEditComponent implements OnInit {
             status:   payload.status,
           });
         }
-        this.router.navigate(['/user-admin']);
+        this.router.navigate([this.returnUrl]);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update user' });
@@ -144,6 +147,6 @@ export class UserEditComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/user-admin']);
+    this.router.navigate([this.returnUrl]);
   }
 }

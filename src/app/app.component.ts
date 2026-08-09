@@ -163,6 +163,7 @@ export class AppComponent implements OnInit, OnDestroy {
       '/user-admin':              [{ label: 'Administration' }, { label: 'Users' }],
       '/user-create':             [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Add User' }],
       '/user-edit':               [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Edit User' }],
+      '/my-account':              [{ label: 'My Account' }],
       '/delete-account':          [{ label: 'My Account' }],
       '/privacy-policy':          [{ label: 'Privacy Policy' }],
     };
@@ -206,7 +207,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   navigateToAccount() {
-    this.router.navigate(['/delete-account']);
+    this.router.navigate(['/my-account']);
   }
 
   logout() {
