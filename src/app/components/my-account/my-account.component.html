@@ -1,0 +1,68 @@
+<div class="max-w-2xl mx-auto py-8 px-4">
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold m-0">My Account</h2>
+      <p class="text-muted-color mt-1 mb-0">Your profile information</p>
+    </div>
+    <p-button
+      label="Edit"
+      icon="pi pi-pencil"
+      severity="secondary"
+      (onClick)="editProfile()">
+    </p-button>
+  </div>
+
+  @if (user) {
+    <div class="flex flex-col gap-6">
+
+      <!-- Name -->
+      <div class="flex gap-8">
+        <div class="flex flex-col gap-1 flex-1">
+          <span class="text-xs text-muted-color uppercase tracking-wide font-medium">First Name</span>
+          <span class="text-sm">{{ user.fname }}</span>
+        </div>
+        <div class="flex flex-col gap-1 flex-1">
+          <span class="text-xs text-muted-color uppercase tracking-wide font-medium">Last Name</span>
+          <span class="text-sm">{{ user.lname }}</span>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-muted-color uppercase tracking-wide font-medium">Email</span>
+        <span class="text-sm">{{ user.email }}</span>
+      </div>
+
+      <!-- Role & Status -->
+      <div class="flex gap-8">
+        <div class="flex flex-col gap-1 flex-1">
+          <span class="text-xs text-muted-color uppercase tracking-wide font-medium">Role</span>
+          <span class="text-sm">{{ roleLabel(user.role) }}</span>
+        </div>
+        <div class="flex flex-col gap-1 flex-1">
+          <span class="text-xs text-muted-color uppercase tracking-wide font-medium">Status</span>
+          <p-tag [value]="user.status | titlecase" [severity]="statusSeverity(user.status)"></p-tag>
+        </div>
+      </div>
+
+      <!-- Sites -->
+      <div class="flex flex-col gap-2">
+        <span class="text-xs text-muted-color uppercase tracking-wide font-medium">Assigned Sites</span>
+        @if (loadingSites) {
+          <p-progressspinner styleClass="w-6 h-6"></p-progressspinner>
+        } @else if (assignedSites.length === 0) {
+          <span class="text-sm text-muted-color">No sites assigned</span>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (site of assignedSites; track site.id) {
+              <span class="text-sm bg-surface-100 rounded px-2 py-1">{{ site.name }}</span>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

@@ -9,6 +9,10 @@ import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { SiteManagementComponent } from './components/site-management/site-management.component';
 import { TenantAdminComponent } from './components/tenant-admin/tenant-admin.component';
+import { UserAdminComponent } from './components/user-admin/user-admin.component';
+import { UserCreateComponent } from './components/user-create/user-create.component';
+import { UserEditComponent } from './components/user-edit/user-edit.component';
+import { MyAccountComponent } from './components/my-account/my-account.component';
 import { DeleteAccountComponent } from './components/delete-account/delete-account.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 
@@ -21,6 +25,10 @@ export const routes: Routes = [
   { path: 'scada', component: ScadaComponent, canActivate: [authGuard] },
   { path: 'site-management', component: SiteManagementComponent, canActivate: [adminGuard] },
   { path: 'tenant-admin', component: TenantAdminComponent, canActivate: [adminGuard] },
+  { path: 'user-admin', component: UserAdminComponent, canActivate: [adminGuard] },
+  { path: 'user-create', component: UserCreateComponent, canActivate: [adminGuard] },
+  { path: 'user-edit',   component: UserEditComponent,   canActivate: [adminGuard] },
+  { path: 'my-account',  component: MyAccountComponent,  canActivate: [authGuard] },
   { path: 'delete-account', component: DeleteAccountComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
