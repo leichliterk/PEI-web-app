@@ -5,6 +5,7 @@ import { PlcSnapshot } from '../../services/websocket.service';
 import { SiteCardComponent } from '../site-card/site-card.component';
 import { CommonModule } from '@angular/common';
 import { TenantService, Tenant, TenantSite } from '../../services/tenant.service';
+import { UserService } from '../../services/user.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
@@ -59,20 +60,27 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private tenantService: TenantService,
+    private userService: UserService,
     private webSocketService: WebSocketService,
     private siteService: SiteService
   ) { }
 
   ngOnInit(): void {
-    this.tenantService.getTenantById(1001).subscribe({
+    const appUser = this.userService.appUserValue;
+    const tenantId = appUser?.tenant_id ?? 1001;
+    const allowedSiteIds = new Set(appUser?.site_ids ?? []);
+
+    this.tenantService.getTenantById(tenantId).subscribe({
       next: (t) => {
         this.tenant = t;
-        this.sites = t.sites.map((s: TenantSite) => ({
-          site_id: s.site_id,
-          name: s.name,
-          connection_status: this.mapConnectionStatus(s.connection_status),
-          app_version: s.app_version,
-        }));
+        this.sites = t.sites
+          .filter((s: TenantSite) => allowedSiteIds.has(s.site_id))
+          .map((s: TenantSite) => ({
+            site_id: s.site_id,
+            name: s.name,
+            connection_status: this.mapConnectionStatus(s.connection_status),
+            app_version: s.app_version,
+          }));
         this.loading = false;
 
         this.siteService.getLatestReadings(t.tenant_id).subscribe({

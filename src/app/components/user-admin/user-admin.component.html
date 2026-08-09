@@ -1,0 +1,58 @@
+<p-toast></p-toast>
+
+<div class="max-w-4xl mx-auto py-8 px-4">
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold m-0">Users</h2>
+      <p class="text-muted-color mt-1 mb-0">Manage users for this tenant</p>
+    </div>
+    <p-button
+      label="Add User"
+      icon="pi pi-plus"
+      styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700 px-4 py-2"
+      (onClick)="addUser()">
+    </p-button>
+  </div>
+
+  <p-table
+    [value]="users"
+    [loading]="loading"
+    size="small"
+    [tableStyle]="{'min-width': '100%'}">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px">Name</th>
+        <th style="min-width: 200px">Email</th>
+        <th style="width: 100px">Role</th>
+        <th style="width: 110px">Status</th>
+        <th style="width: 120px">Group</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr class="cursor-pointer hover:bg-emphasis" (click)="editUser(user)">
+        <td class="font-medium">{{ user.fname }} {{ user.lname }}</td>
+        <td class="text-muted-color">{{ user.email }}</td>
+        <td>{{ roleLabel(user.role) }}</td>
+        <td>
+          <p-tag
+            [value]="user.status | titlecase"
+            [severity]="statusSeverity(user.status)">
+          </p-tag>
+        </td>
+        <td class="text-muted-color">{{ user.group }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="empty">
+      @if (!loading) {
+        <tr>
+          <td colspan="5" class="text-center py-8 text-muted-color">No users found.</td>
+        </tr>
+      }
+    </ng-template>
+  </p-table>
+
+</div>
