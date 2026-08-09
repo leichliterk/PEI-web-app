@@ -72,17 +72,21 @@
             }
           </button>
           @if (adminExpanded && !sidebarCollapsed) {
-            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteAdmin()" title="Tenant Administration">
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteAdmin()" title="Tenant">
               <i class="pi pi-building sidebar-item-icon"></i>
-              <span>Tenant Administration</span>
+              <span>Tenant</span>
             </button>
-            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteManagement()" title="Site Management">
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToSiteManagement()" title="Sites">
               <i class="pi pi-map-marker sidebar-item-icon"></i>
-              <span>Site Management</span>
+              <span>Sites</span>
             </button>
-            <button class="sidebar-item sidebar-item--child" (click)="navigateToAdmin()" title="Site Agent Mgmt.">
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToAdmin()" title="Site Agents">
               <i class="pi pi-microchip sidebar-item-icon"></i>
-              <span>Site Agent Mgmt.</span>
+              <span>Site Agents</span>
+            </button>
+            <button class="sidebar-item sidebar-item--child" (click)="navigateToUserAdmin()" title="Users">
+              <i class="pi pi-users sidebar-item-icon"></i>
+              <span>Users</span>
             </button>
           }
         }

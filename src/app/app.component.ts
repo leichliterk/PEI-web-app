@@ -157,9 +157,11 @@ export class AppComponent implements OnInit, OnDestroy {
       '/settings':                [{ label: 'Settings' }, { label: 'Notifications' }],
       '/daily-destruction-report':[{ label: 'Reports' }, { label: 'Destruction Report' }],
       '/scada':                   [{ label: 'SCADA' }],
-      '/site-release-mgmt':       [{ label: 'Administration' }, { label: 'Site Agent Mgmt.' }],
-      '/site-management':         [{ label: 'Administration' }, { label: 'Site Management' }],
-      '/tenant-admin':            [{ label: 'Administration' }, { label: 'Tenant Administration' }],
+      '/site-release-mgmt':       [{ label: 'Administration' }, { label: 'Site Agents' }],
+      '/site-management':         [{ label: 'Administration' }, { label: 'Sites' }],
+      '/tenant-admin':            [{ label: 'Administration' }, { label: 'Tenant' }],
+      '/user-admin':              [{ label: 'Administration' }, { label: 'Users' }],
+      '/user-create':             [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Add User' }],
       '/delete-account':          [{ label: 'My Account' }],
       '/privacy-policy':          [{ label: 'Privacy Policy' }],
     };
@@ -238,6 +240,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToSiteAdmin() {
     this.router.navigate(['/tenant-admin']);
+  }
+
+  navigateToUserAdmin() {
+    this.router.navigate(['/user-admin']);
   }
 
   navigateToReports() {
