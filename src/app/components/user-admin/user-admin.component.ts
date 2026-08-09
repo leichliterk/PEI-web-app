@@ -46,6 +46,10 @@ export class UserAdminComponent implements OnInit {
     this.router.navigate(['/user-create']);
   }
 
+  editUser(user: AppUser): void {
+    this.router.navigate(['/user-edit'], { state: { user } });
+  }
+
   ngOnInit(): void {
     this.loadUsers();
   }

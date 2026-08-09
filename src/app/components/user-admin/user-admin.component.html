@@ -32,7 +32,7 @@
     </ng-template>
 
     <ng-template pTemplate="body" let-user>
-      <tr>
+      <tr class="cursor-pointer hover:bg-emphasis" (click)="editUser(user)">
         <td class="font-medium">{{ user.fname }} {{ user.lname }}</td>
         <td class="text-muted-color">{{ user.email }}</td>
         <td>{{ roleLabel(user.role) }}</td>

@@ -11,6 +11,7 @@ import { SiteManagementComponent } from './components/site-management/site-manag
 import { TenantAdminComponent } from './components/tenant-admin/tenant-admin.component';
 import { UserAdminComponent } from './components/user-admin/user-admin.component';
 import { UserCreateComponent } from './components/user-create/user-create.component';
+import { UserEditComponent } from './components/user-edit/user-edit.component';
 import { DeleteAccountComponent } from './components/delete-account/delete-account.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 
@@ -25,6 +26,7 @@ export const routes: Routes = [
   { path: 'tenant-admin', component: TenantAdminComponent, canActivate: [adminGuard] },
   { path: 'user-admin', component: UserAdminComponent, canActivate: [adminGuard] },
   { path: 'user-create', component: UserCreateComponent, canActivate: [adminGuard] },
+  { path: 'user-edit',   component: UserEditComponent,   canActivate: [adminGuard] },
   { path: 'delete-account', component: DeleteAccountComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' }

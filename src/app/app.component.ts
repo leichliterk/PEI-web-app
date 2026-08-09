@@ -162,6 +162,7 @@ export class AppComponent implements OnInit, OnDestroy {
       '/tenant-admin':            [{ label: 'Administration' }, { label: 'Tenant' }],
       '/user-admin':              [{ label: 'Administration' }, { label: 'Users' }],
       '/user-create':             [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Add User' }],
+      '/user-edit':               [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Edit User' }],
       '/delete-account':          [{ label: 'My Account' }],
       '/privacy-policy':          [{ label: 'Privacy Policy' }],
     };

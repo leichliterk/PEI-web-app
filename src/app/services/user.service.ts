@@ -76,4 +76,11 @@ export class UserService {
       tap(appUser => this.appUserSubject.next(appUser))
     );
   }
+
+  patchAppUser(changes: Partial<AppUser>): void {
+    const current = this.appUserSubject.value;
+    if (current) {
+      this.appUserSubject.next({ ...current, ...changes });
+    }
+  }
 }
