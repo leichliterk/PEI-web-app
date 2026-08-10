@@ -3,3 +3,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── SelectButton selected state ────────────────────────────────────────── */
+.p-selectbutton {
+  overflow: hidden;
+
+  .p-togglebutton {
+    color: #374151 !important;
+  }
+
+  .p-togglebutton-checked .p-togglebutton-content {
+    background: #2563eb !important;
+  }
+
+  .p-togglebutton-checked {
+    color: #ffffff !important;
+  }
+}
+
+/* ── Input padding ──────────────────────────────────────────────────────── */
+.p-inputtext,
+.p-datepicker input {
+  padding-left: 5px !important;
+}
+
+/* ── Input border overrides ─────────────────────────────────────────────── */
+.p-inputtext,
+.p-select,
+.p-multiselect,
+.p-password,
+.p-textarea,
+.p-inputnumber .p-inputtext,
+.p-checkbox .p-checkbox-box {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #64748b !important;
+
+  &:hover {
+    border-color: #475569 !important;
+  }
+}

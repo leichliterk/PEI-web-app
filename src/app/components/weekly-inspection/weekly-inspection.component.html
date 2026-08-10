@@ -1,0 +1,225 @@
+<p-toast position="top-center"></p-toast>
+
+<div class="max-w-lg mx-auto px-4 py-6 pb-28">
+
+  <!-- Page header -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold m-0">Weekly Inspection</h2>
+    <p class="text-sm text-muted-color mt-1 mb-0">Skid/Flare weekly examination</p>
+  </div>
+
+  <div class="flex flex-col gap-4">
+
+    <!-- ── Header Info ─────────────────────────────────────────── -->
+    <div class="section-card flex flex-col gap-4">
+      <p class="section-title m-0">Inspection Details</p>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Site <span class="text-red-500">*</span></label>
+        <p-select
+          [(ngModel)]="form.site"
+          [options]="sites"
+          optionLabel="name"
+          placeholder="Select site…"
+          appendTo="body"
+          fluid>
+        </p-select>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Location <span class="text-red-500">*</span></label>
+
+        @if (locationStatus === 'acquiring') {
+          <div class="flex items-center gap-2 text-sm text-muted-color">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Acquiring location…</span>
+          </div>
+        }
+
+        @if (locationStatus === 'granted') {
+          <div class="flex gap-4 text-sm">
+            <div class="flex gap-1 items-center">
+              <span class="text-muted-color">Lat</span>
+              <span class="font-medium">{{ form.latitude }}</span>
+            </div>
+            <div class="flex gap-1 items-center">
+              <span class="text-muted-color">Long</span>
+              <span class="font-medium">{{ form.longitude }}</span>
+            </div>
+            <p-button icon="pi pi-refresh" [text]="true" size="small" pTooltip="Refresh location" (onClick)="acquireLocation()"></p-button>
+          </div>
+        }
+
+        @if (locationStatus === 'denied') {
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-red-500">Location access denied.</span>
+            <p-button label="Retry" icon="pi pi-refresh" [text]="true" size="small" (onClick)="acquireLocation()"></p-button>
+          </div>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Technician <span class="text-red-500">*</span></label>
+        <input pInputText [(ngModel)]="form.technician" class="w-full" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Date</label>
+        <p-datepicker [(ngModel)]="form.date" [showIcon]="true" appendTo="body" fluid></p-datepicker>
+      </div>
+    </div>
+
+    <!-- ── Checks ──────────────────────────────────────────────── -->
+    <div class="section-card">
+      <p class="section-title m-0 mb-1">Checks</p>
+
+      <label class="check-row" (click)="form.equipmentInspected = !form.equipmentInspected">
+        <p-checkbox [(ngModel)]="form.equipmentInspected" [binary]="true"></p-checkbox>
+        <span class="check-label">Site equipment physically inspected</span>
+      </label>
+
+      <label class="check-row" (click)="form.alarmsVerified = !form.alarmsVerified">
+        <p-checkbox [(ngModel)]="form.alarmsVerified" [binary]="true"></p-checkbox>
+        <span class="check-label">System alarm status verified with notifications</span>
+      </label>
+
+      <label class="check-row" (click)="form.propaneLeakCheck = !form.propaneLeakCheck">
+        <p-checkbox [(ngModel)]="form.propaneLeakCheck" [binary]="true"></p-checkbox>
+        <span class="check-label">Propane system leak check</span>
+      </label>
+    </div>
+
+    <!-- ── Readings ────────────────────────────────────────────── -->
+    <div class="section-card">
+      <p class="section-title m-0 mb-1">Readings</p>
+
+      <div class="input-row">
+        <div class="input-label">Flame Arrestor Differential</div>
+        <p-inputnumber [(ngModel)]="form.flameArrestorDiff" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="2" fluid></p-inputnumber>
+        <span class="input-unit">wc</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Kimre Filter Differential</div>
+        <p-inputnumber [(ngModel)]="form.kimreFilterDiff" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="2" fluid></p-inputnumber>
+        <span class="input-unit">wc</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Blower Discharge Temp</div>
+        <p-inputnumber [(ngModel)]="form.blowerDischargeTemp" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="1" fluid></p-inputnumber>
+        <span class="input-unit">°F</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Mine Gas Temp</div>
+        <p-inputnumber [(ngModel)]="form.mineGasTemp" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="1" fluid></p-inputnumber>
+        <span class="input-unit">°F</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Mine Gas Pressure / Vacuum</div>
+        <p-inputnumber [(ngModel)]="form.mineGasPressure" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="2" fluid></p-inputnumber>
+        <span class="input-unit">wc</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Methane</div>
+        <p-inputnumber [(ngModel)]="form.methane" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="1" fluid></p-inputnumber>
+        <span class="input-unit">%</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Gas Flow</div>
+        <p-inputnumber [(ngModel)]="form.gasFlow" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="0" fluid></p-inputnumber>
+        <span class="input-unit">SCFM</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Flare Temp</div>
+        <p-inputnumber [(ngModel)]="form.flareTemp" [useGrouping]="false" [minFractionDigits]="0" [maxFractionDigits]="0" fluid></p-inputnumber>
+        <span class="input-unit">°F</span>
+      </div>
+
+    </div>
+
+    <!-- ── Equipment & Supplies ────────────────────────────────── -->
+    <div class="section-card flex flex-col gap-5">
+      <p class="section-title m-0">Equipment &amp; Supplies</p>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Fire Extinguishers</label>
+        <p-selectbutton
+          [(ngModel)]="form.fireExtinguisher"
+          [options]="extinguisherOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full">
+        </p-selectbutton>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Nitrogen Tank</div>
+        <p-inputnumber [(ngModel)]="form.nitrogenTank" [useGrouping]="false" fluid></p-inputnumber>
+        <span class="input-unit">psi</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-label">Meter Reading</div>
+        <p-inputnumber [(ngModel)]="form.meterReading" [useGrouping]="false" fluid></p-inputnumber>
+        <span class="input-unit">kwh</span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Supplies Needed</label>
+        <textarea pTextarea [(ngModel)]="form.suppliesNeeded" rows="2" class="w-full" placeholder="None"></textarea>
+      </div>
+    </div>
+
+    <!-- ── Sign-off ────────────────────────────────────────────── -->
+    <div class="section-card flex flex-col gap-4">
+      <p class="section-title m-0">Sign-off</p>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Log Book Entry Made on Site</label>
+        <p-selectbutton
+          [(ngModel)]="form.logBookEntry"
+          [options]="yesNoOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full">
+        </p-selectbutton>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="field-label">Signed By <span class="text-red-500">*</span></label>
+        <input pInputText [(ngModel)]="form.signedBy" class="w-full" />
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Sticky Submit Bar ───────────────────────────────────── -->
+  <div class="submit-bar">
+    <div class="flex gap-3 max-w-lg mx-auto">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        class="flex-1"
+        styleClass="w-full"
+        (onClick)="cancel()">
+      </p-button>
+      <p-button
+        label="Submit Inspection"
+        icon="pi pi-check"
+        class="flex-1"
+        styleClass="w-full"
+        [disabled]="!formValid"
+        [loading]="saving"
+        (onClick)="submit()">
+      </p-button>
+    </div>
+  </div>
+
+</div>
