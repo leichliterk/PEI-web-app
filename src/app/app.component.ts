@@ -40,6 +40,7 @@ export class AppComponent implements OnInit, OnDestroy {
   breadcrumbItems: MenuItem[] = [];
   readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/home' };
   settingsExpanded: boolean = false;
+  toolsExpanded: boolean = false;
   adminExpanded: boolean = false;
   reportsExpanded: boolean = false;
 
@@ -164,6 +165,8 @@ export class AppComponent implements OnInit, OnDestroy {
       '/user-create':             [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Add User' }],
       '/user-edit':               [{ label: 'Administration' }, { label: 'Users', routerLink: '/user-admin' }, { label: 'Edit User' }],
       '/my-account':              [{ label: 'My Account' }],
+      '/inspections':             [{ label: 'Tools' }, { label: 'Inspections' }],
+      '/inspection/weekly':       [{ label: 'Tools' }, { label: 'Inspections', routerLink: '/inspections' }, { label: 'Weekly' }],
       '/delete-account':          [{ label: 'My Account' }],
       '/privacy-policy':          [{ label: 'Privacy Policy' }],
     };
@@ -250,5 +253,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToReports() {
     this.router.navigate(['/daily-destruction-report']);
+  }
+
+  navigateToInspections() {
+    this.router.navigate(['/inspections']);
   }
 }

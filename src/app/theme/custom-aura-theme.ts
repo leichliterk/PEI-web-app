@@ -20,14 +20,14 @@ export const CustomAuraTheme = definePreset(Aura, {
     colorScheme: {
       light: {
         formField: {
-          borderColor: '{surface.500}',
-          hoverBorderColor: '{surface.600}',
+          borderColor: '{surface.700}',
+          hoverBorderColor: '{surface.800}',
         }
       },
       dark: {
         formField: {
-          borderColor: '{surface.500}',
-          hoverBorderColor: '{surface.400}',
+          borderColor: '{surface.400}',
+          hoverBorderColor: '{surface.300}',
         }
       }
     }
@@ -42,26 +42,26 @@ export const CustomAuraTheme = definePreset(Aura, {
     },
     inputtext: {
       root: {
-        borderColor: '{surface.500}',
-        hoverBorderColor: '{surface.600}',
+        borderColor: '{surface.700}',
+        hoverBorderColor: '{surface.800}',
       }
     },
     select: {
       root: {
-        borderColor: '{surface.500}',
-        hoverBorderColor: '{surface.600}',
+        borderColor: '{surface.700}',
+        hoverBorderColor: '{surface.800}',
       }
     },
     multiselect: {
       root: {
-        borderColor: '{surface.500}',
-        hoverBorderColor: '{surface.600}',
+        borderColor: '{surface.700}',
+        hoverBorderColor: '{surface.800}',
       }
     },
     textarea: {
       root: {
-        borderColor: '{surface.500}',
-        hoverBorderColor: '{surface.600}',
+        borderColor: '{surface.700}',
+        hoverBorderColor: '{surface.800}',
       }
     },
   }
