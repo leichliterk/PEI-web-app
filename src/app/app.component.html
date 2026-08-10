@@ -31,6 +31,19 @@
           <i class="pi pi-home sidebar-item-icon"></i>
           @if (!sidebarCollapsed) { <span>Home</span> }
         </button>
+        <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="sidebarCollapsed ? navigateToInspections() : (toolsExpanded = !toolsExpanded)" title="Tools">
+          <i class="pi pi-wrench sidebar-item-icon"></i>
+          @if (!sidebarCollapsed) {
+            <span class="flex-1">Tools</span>
+            <i class="pi text-xs" [class.pi-chevron-down]="toolsExpanded" [class.pi-chevron-right]="!toolsExpanded"></i>
+          }
+        </button>
+        @if (toolsExpanded && !sidebarCollapsed) {
+          <button class="sidebar-item sidebar-item--child" (click)="navigateToInspections()" title="Inspections">
+            <i class="pi pi-clipboard sidebar-item-icon"></i>
+            <span>Inspections</span>
+          </button>
+        }
         <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="sidebarCollapsed ? navigateToSettings() : (settingsExpanded = !settingsExpanded)" title="Settings">
           <i class="pi pi-cog sidebar-item-icon"></i>
           @if (!sidebarCollapsed) {
