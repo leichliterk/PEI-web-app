@@ -15,6 +15,7 @@ import { UserEditComponent } from './components/user-edit/user-edit.component';
 import { MyAccountComponent } from './components/my-account/my-account.component';
 import { InspectionsComponent } from './components/inspections/inspections.component';
 import { WeeklyInspectionComponent } from './components/weekly-inspection/weekly-inspection.component';
+import { DataFileDownloadComponent } from './components/data-file-download/data-file-download.component';
 import { DeleteAccountComponent } from './components/delete-account/delete-account.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 
@@ -24,6 +25,7 @@ export const routes: Routes = [
   { path: 'settings', component: SettingsNotificationsComponent, canActivate: [authGuard] },
   { path: 'site-release-mgmt', component: SiteReleaseMgmtComponent, canActivate: [adminGuard] },
   { path: 'daily-destruction-report', component: DailyDestructionReportComponent, canActivate: [authGuard] },
+  { path: 'data-file-download',       component: DataFileDownloadComponent,       canActivate: [authGuard] },
   { path: 'scada', component: ScadaComponent, canActivate: [authGuard] },
   { path: 'site-management', component: SiteManagementComponent, canActivate: [adminGuard] },
   { path: 'tenant-admin', component: TenantAdminComponent, canActivate: [adminGuard] },

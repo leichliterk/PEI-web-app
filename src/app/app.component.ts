@@ -157,6 +157,7 @@ export class AppComponent implements OnInit, OnDestroy {
       '/home':                    [],
       '/settings':                [{ label: 'Settings' }, { label: 'Notifications' }],
       '/daily-destruction-report':[{ label: 'Reports' }, { label: 'Destruction Report' }],
+      '/data-file-download':      [{ label: 'Reports' }, { label: 'Data File Download' }],
       '/scada':                   [{ label: 'SCADA' }],
       '/site-release-mgmt':       [{ label: 'Administration' }, { label: 'Site Agents' }],
       '/site-management':         [{ label: 'Administration' }, { label: 'Sites' }],
@@ -253,6 +254,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToReports() {
     this.router.navigate(['/daily-destruction-report']);
+  }
+
+  navigateToDataFileDownload() {
+    this.router.navigate(['/data-file-download']);
   }
 
   navigateToInspections() {

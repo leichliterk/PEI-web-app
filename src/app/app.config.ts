@@ -2,6 +2,7 @@ import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authHttpInterceptorFn, provideAuth0 } from '@auth0/auth0-angular';
+import { unauthorizedInterceptor } from './interceptors/unauthorized.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { CustomAuraTheme } from './theme/custom-aura-theme';
@@ -13,7 +14,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authHttpInterceptorFn])),
+    provideHttpClient(withInterceptors([authHttpInterceptorFn, unauthorizedInterceptor])),
     provideAnimationsAsync(),
     provideAuth0({
       domain: environment.AUTH_DOMAIN,
