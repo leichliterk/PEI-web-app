@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { Site, SiteDataReading, SiteService } from '../../services/site.service';
 import { PlcSnapshot } from '../../services/websocket.service';
 import { SiteCardComponent } from '../site-card/site-card.component';
@@ -66,10 +67,25 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    const appUser = this.userService.appUserValue;
-    const tenantId = appUser?.tenant_id ?? 1001;
-    const allowedSiteIds = new Set(appUser?.site_ids ?? []);
+    this.userService.appUser$.pipe(
+      filter(user => !!user),
+      take(1)
+    ).subscribe(appUser => {
+      const tenantId = appUser!.tenant_id;
+      const allowedSiteIds = new Set(appUser!.site_ids);
+      this.loadTenant(tenantId, allowedSiteIds);
+    });
 
+    this.siteDataSubscription = this.webSocketService.siteData$.subscribe(reading => {
+      this.readings = { ...this.readings, [reading.site_id]: reading };
+    });
+
+    this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
+      this.plcSnapshots = { ...this.plcSnapshots, [snapshot.site_id]: snapshot };
+    });
+  }
+
+  private loadTenant(tenantId: number, allowedSiteIds: Set<string>): void {
     this.tenantService.getTenantById(tenantId).subscribe({
       next: (t) => {
         this.tenant = t;
@@ -110,14 +126,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading tenant:', error);
       }
-    });
-
-    this.siteDataSubscription = this.webSocketService.siteData$.subscribe(reading => {
-      this.readings = { ...this.readings, [reading.site_id]: reading };
-    });
-
-    this.plcSnapshotSubscription = this.webSocketService.plcSnapshot$.subscribe(snapshot => {
-this.plcSnapshots = { ...this.plcSnapshots, [snapshot.site_id]: snapshot };
     });
   }
 
