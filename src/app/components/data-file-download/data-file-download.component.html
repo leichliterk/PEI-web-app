@@ -1,0 +1,83 @@
+<p-toast></p-toast>
+
+<div class="px-4 py-8">
+  <div class="w-fit mx-auto" style="min-width: 480px; max-width: 640px">
+
+    <div class="mb-6">
+      <h2 class="text-2xl font-semibold m-0">Data File Download</h2>
+      <p class="text-muted-color mt-1 mb-0">Select a date to download site data files.</p>
+    </div>
+
+    <div class="flex flex-col gap-5">
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">Date</label>
+        <p-datepicker
+          [(ngModel)]="date"
+          [showIcon]="true"
+          dateFormat="mm/dd/yy"
+          [maxDate]="today">
+        </p-datepicker>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-medium">File types:</span>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-2">
+            <p-checkbox [(ngModel)]="includeAccountingLog" [binary]="true" inputId="chk-accounting"></p-checkbox>
+            <label for="chk-accounting" class="cursor-pointer">Accounting log</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <p-checkbox [(ngModel)]="includeFlareData" [binary]="true" inputId="chk-flare"></p-checkbox>
+            <label for="chk-flare" class="cursor-pointer">Flare data</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <p-checkbox [(ngModel)]="includeChartRecorder" [binary]="true" inputId="chk-chart"></p-checkbox>
+            <label for="chk-chart" class="cursor-pointer">Chart recorder</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-medium">Sites selected: <span class="text-muted-color font-normal">{{ selectedCount }} of {{ sites.length }}</span></span>
+        <div class="flex flex-col border border-surface-300 rounded-lg overflow-hidden">
+          @for (site of sites; track site.site_id) {
+            <label class="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-surface-50 border-b border-surface-200 last:border-b-0">
+              <p-checkbox [(ngModel)]="site.selected" [binary]="true" [inputId]="'site-' + site.site_id"></p-checkbox>
+              <span class="flex-1 text-sm">{{ site.name }}</span>
+              <span class="text-xs text-muted-color font-mono">{{ site.site_id }}</span>
+            </label>
+          }
+          @if (sites.length === 0) {
+            <span class="px-3 py-4 text-sm text-muted-color text-center">No sites available.</span>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action buttons -->
+    <div class="flex justify-end items-center gap-3 mt-8 pt-4 border-t border-surface-200">
+      @if (downloading) {
+        <p-progressspinner class="w-6 h-6" strokeWidth="4"></p-progressspinner>
+        <span class="text-sm text-muted-color">Preparing download…</span>
+      }
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        [disabled]="downloading"
+        (onClick)="cancel()">
+      </p-button>
+      <p-button
+        label="Download"
+        icon="pi pi-download"
+        styleClass="!bg-blue-600 !text-white !border-blue-600 hover:!bg-blue-700"
+        [disabled]="!canDownload || downloading"
+        [loading]="downloading"
+        (onClick)="download()">
+      </p-button>
+    </div>
+
+  </div>
+</div>

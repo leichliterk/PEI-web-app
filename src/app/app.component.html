@@ -69,6 +69,10 @@
             <i class="pi pi-fire sidebar-item-icon"></i>
             <span>Destruction Report</span>
           </button>
+          <button class="sidebar-item sidebar-item--child" (click)="navigateToDataFileDownload()" title="Data File Download">
+            <i class="pi pi-download sidebar-item-icon"></i>
+            <span>Data File Download</span>
+          </button>
         }
         <button class="sidebar-item" [class.sidebar-item--collapsed]="sidebarCollapsed" (click)="navigateToScada()" title="SCADA">
           <i class="pi pi-desktop sidebar-item-icon"></i>
