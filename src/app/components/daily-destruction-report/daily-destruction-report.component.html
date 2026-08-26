@@ -220,6 +220,14 @@
       <span class="text-xs text-muted-color">Leave blank to hide the Daily Value column.</span>
     </div>
 
+    <div class="flex items-center justify-between">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-sm font-medium">CARB Certified Sites Only</span>
+        <span class="text-xs text-muted-color">Exclude sites that are not CARB certified from the report.</span>
+      </div>
+      <p-toggleswitch [(ngModel)]="draft.carbOnly"></p-toggleswitch>
+    </div>
+
     <p-divider></p-divider>
 
     <p class="text-sm font-medium m-0">Constants</p>

@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ToastModule } from 'primeng/toast';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DividerModule } from 'primeng/divider';
@@ -17,6 +18,8 @@ import { environment } from '../../../environments/environment';
 interface ReportSite {
   site_id: string;
   name: string;
+  status?: string;
+  carb_certified?: boolean;
 }
 
 interface ReportResponse {
@@ -37,6 +40,7 @@ interface ReportSettings {
   DE: number | null;
   CF: number | null;
   PEMDF: number | null;
+  carbOnly: boolean;
 }
 
 const SETTINGS_KEY = 'pei_report_settings';
@@ -47,6 +51,7 @@ const DEFAULT_SETTINGS: ReportSettings = {
   DE: null,
   CF: null,
   PEMDF: null,
+  carbOnly: false,
 };
 
 @Component({
@@ -63,6 +68,7 @@ const DEFAULT_SETTINGS: ReportSettings = {
     InputNumberModule,
     DividerModule,
     SelectButtonModule,
+    ToggleSwitchModule,
   ],
   providers: [MessageService],
   templateUrl: './daily-destruction-report.component.html',
@@ -138,10 +144,11 @@ export class DailyDestructionReportComponent implements OnInit {
   openSettings(): void {
     this.draft = {
       creditValue: this.settings.creditValue,
-      T:     this.settings.T     ?? this.constants?.T     ?? null,
-      DE:    this.settings.DE    ?? this.constants?.DE    ?? null,
-      CF:    this.settings.CF    ?? this.constants?.CF    ?? null,
-      PEMDF: this.settings.PEMDF ?? this.constants?.PEMDF ?? null,
+      T:        this.settings.T        ?? this.constants?.T     ?? null,
+      DE:       this.settings.DE       ?? this.constants?.DE    ?? null,
+      CF:       this.settings.CF       ?? this.constants?.CF    ?? null,
+      PEMDF:    this.settings.PEMDF    ?? this.constants?.PEMDF ?? null,
+      carbOnly: this.settings.carbOnly,
     };
     this.settingsVisible = true;
   }
@@ -173,7 +180,9 @@ export class DailyDestructionReportComponent implements OnInit {
       { params }
     ).subscribe({
       next: res => {
-        this.sites = res.sites;
+        let filteredSites = res.sites.filter(s => s.status === 'production');
+        if (this.settings.carbOnly) filteredSites = filteredSites.filter(s => s.carb_certified);
+        this.sites = filteredSites;
         this.constants = res.constants;
         this.rows = res.dates.map(date => {
           const row: ReportRow = { date };

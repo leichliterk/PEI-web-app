@@ -12,11 +12,13 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
     selector: 'app-home',
-    imports: [CommonModule, SiteCardComponent, ProgressSpinnerModule, ButtonModule, MenuModule],
+    imports: [CommonModule, SiteCardComponent, ProgressSpinnerModule, ButtonModule, MenuModule, ToastModule],
+    providers: [MessageService],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })
@@ -30,6 +32,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loading: boolean = true;
+  loadError: boolean = false;
+  private lastTenantId?: number;
+  private lastAllowedSiteIds?: Set<string>;
   tenant: undefined | Tenant;
   sites: Site[] = [];
   private subscribedSites: { tenantId: number; siteId: string }[] = [];
@@ -63,7 +68,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private tenantService: TenantService,
     private userService: UserService,
     private webSocketService: WebSocketService,
-    private siteService: SiteService
+    private siteService: SiteService,
+    private messageService: MessageService,
   ) { }
 
   ngOnInit(): void {
@@ -71,9 +77,23 @@ export class HomeComponent implements OnInit, OnDestroy {
       filter(user => !!user),
       take(1)
     ).subscribe(appUser => {
-      const tenantId = appUser!.tenant_id;
-      const allowedSiteIds = new Set(appUser!.site_ids);
-      this.loadTenant(tenantId, allowedSiteIds);
+      this.lastTenantId = appUser!.tenant_id;
+      this.lastAllowedSiteIds = new Set(appUser!.site_ids);
+      this.loadTenant(this.lastTenantId, this.lastAllowedSiteIds);
+    });
+
+    this.userService.appUserLoadFailed$.pipe(
+      filter(failed => failed),
+      take(1)
+    ).subscribe(() => {
+      this.loading = false;
+      this.loadError = true;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Failed to load sites',
+        detail: 'The server encountered an error loading your profile. Please refresh the page.',
+        life: 8000,
+      });
     });
 
     this.siteDataSubscription = this.webSocketService.siteData$.subscribe(reading => {
@@ -125,8 +145,27 @@ export class HomeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading tenant:', error);
+        this.loading = false;
+        this.loadError = true;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Failed to load sites',
+          detail: error?.error?.message ?? 'The server encountered an error. Please try again.',
+          life: 8000,
+        });
       }
     });
+  }
+
+  retry(): void {
+    this.loading = true;
+    this.loadError = false;
+    if (this.lastTenantId && this.lastAllowedSiteIds) {
+      this.loadTenant(this.lastTenantId, this.lastAllowedSiteIds);
+    } else {
+      // User profile itself failed — reload the page to restart the full auth flow
+      window.location.reload();
+    }
   }
 
   ngOnDestroy(): void {

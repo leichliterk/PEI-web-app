@@ -78,7 +78,10 @@ export class AppComponent implements OnInit, OnDestroy {
         // Fetch full user profile from backend (includes role)
         if (auth0User.email) {
           this.userService.fetchAppUser(auth0User.email).subscribe({
-            error: (err) => console.error('Failed to load app user profile:', err)
+            error: (err) => {
+              console.error('Failed to load app user profile:', err);
+              this.userService.setAppUserLoadFailed();
+            }
           });
         }
 
