@@ -13,13 +13,12 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { UserService } from '../../services/user.service';
+import { AdminSite } from '../tenant-admin/tenant-admin.component';
 import { environment } from '../../../environments/environment';
 
 interface ReportSite {
   site_id: string;
   name: string;
-  status?: string;
-  carb_certified?: boolean;
 }
 
 interface ReportResponse {
@@ -81,6 +80,7 @@ export class DailyDestructionReportComponent implements OnInit {
   sites: ReportSite[] = [];
   rows: ReportRow[] = [];
   constants: { T: number; DE: number; CF: number; PEMDF: number } | null = null;
+  private siteMetadata = new Map<string, AdminSite>();
 
   loading = false;
   hasRun = false;
@@ -113,6 +113,12 @@ export class DailyDestructionReportComponent implements OnInit {
       const stored = localStorage.getItem(SETTINGS_KEY);
       if (stored) this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
     } catch { /* ignore */ }
+
+    const tenantId = this.userService.appUserValue?.tenant_id;
+    if (tenantId) {
+      this.http.get<AdminSite[]>(`${environment.API_SERVER}/site-admin/${tenantId}/sites`)
+        .subscribe({ next: sites => sites.forEach(s => this.siteMetadata.set(s.site_id, s)) });
+    }
   }
 
   onPeriodChange(mode: 'current' | 'previous' | 'custom'): void {
@@ -180,8 +186,13 @@ export class DailyDestructionReportComponent implements OnInit {
       { params }
     ).subscribe({
       next: res => {
-        let filteredSites = res.sites.filter(s => s.status === 'production');
-        if (this.settings.carbOnly) filteredSites = filteredSites.filter(s => s.carb_certified);
+        let filteredSites = res.sites.filter(s => {
+          const meta = this.siteMetadata.get(s.site_id);
+          return meta?.status === 'production';
+        });
+        if (this.settings.carbOnly) {
+          filteredSites = filteredSites.filter(s => this.siteMetadata.get(s.site_id)?.carb_certified);
+        }
         this.sites = filteredSites;
         this.constants = res.constants;
         this.rows = res.dates.map(date => {
