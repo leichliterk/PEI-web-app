@@ -34,6 +34,9 @@ export class UserService {
   private appUserSubject: BehaviorSubject<AppUser | null> = new BehaviorSubject<AppUser | null>(null);
   public appUser$: Observable<AppUser | null> = this.appUserSubject.asObservable();
 
+  private appUserLoadFailedSubject = new BehaviorSubject<boolean>(false);
+  public appUserLoadFailed$ = this.appUserLoadFailedSubject.asObservable();
+
   constructor(private http: HttpClient) {
     this.currentUserSubject = new BehaviorSubject<User | null>(null);
     this.currentUser = this.currentUserSubject.asObservable();
@@ -69,6 +72,11 @@ export class UserService {
   clearUser(): void {
     this.currentUserSubject.next(null);
     this.appUserSubject.next(null);
+    this.appUserLoadFailedSubject.next(false);
+  }
+
+  setAppUserLoadFailed(): void {
+    this.appUserLoadFailedSubject.next(true);
   }
 
   fetchAppUser(email: string): Observable<AppUser> {
