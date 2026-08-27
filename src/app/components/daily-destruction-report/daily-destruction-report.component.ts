@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -21,10 +22,15 @@ interface ReportSite {
   name: string;
 }
 
+interface SiteDataEntry {
+  credits: number | null;
+  uptime: number | null;
+}
+
 interface ReportResponse {
   sites: ReportSite[];
   dates: string[];
-  data: { [date: string]: { [siteId: string]: number | null } };
+  data: { [date: string]: { [siteId: string]: SiteDataEntry | null } };
   constants: { T: number; DE: number; CF: number; PEMDF: number };
 }
 
@@ -79,8 +85,10 @@ export class DailyDestructionReportComponent implements OnInit {
 
   sites: ReportSite[] = [];
   rows: ReportRow[] = [];
+  uptimeData: { [date: string]: { [siteId: string]: number | null } } = {};
   constants: { T: number; DE: number; CF: number; PEMDF: number } | null = null;
   private siteMetadata = new Map<string, AdminSite>();
+  private metadataLoaded = false;
 
   loading = false;
   hasRun = false;
@@ -117,7 +125,12 @@ export class DailyDestructionReportComponent implements OnInit {
     const tenantId = this.userService.appUserValue?.tenant_id;
     if (tenantId) {
       this.http.get<AdminSite[]>(`${environment.API_SERVER}/site-admin/${tenantId}/sites`)
-        .subscribe({ next: sites => sites.forEach(s => this.siteMetadata.set(s.site_id, s)) });
+        .subscribe({
+          next: sites => {
+            sites.forEach(s => this.siteMetadata.set(s.site_id, s));
+            this.metadataLoaded = true;
+          }
+        });
     }
   }
 
@@ -181,11 +194,16 @@ export class DailyDestructionReportComponent implements OnInit {
     this.loading = true;
     this.hasRun = true;
 
-    this.http.get<ReportResponse>(
+    const report$ = this.http.get<ReportResponse>(
       `${environment.API_SERVER}/reports/daily-destruction/${tenantId}`,
       { params }
-    ).subscribe({
-      next: res => {
+    );
+
+    const metadata$ = this.metadataLoaded
+      ? undefined
+      : this.http.get<AdminSite[]>(`${environment.API_SERVER}/site-admin/${tenantId}/sites`);
+
+    const handleResponse = (res: ReportResponse) => {
         let filteredSites = res.sites.filter(s => {
           const meta = this.siteMetadata.get(s.site_id);
           return meta?.status === 'production';
@@ -195,20 +213,42 @@ export class DailyDestructionReportComponent implements OnInit {
         }
         this.sites = filteredSites;
         this.constants = res.constants;
+        const uptime: typeof this.uptimeData = {};
         this.rows = res.dates.map(date => {
           const row: ReportRow = { date };
+          uptime[date] = {};
           for (const site of res.sites) {
-            row[site.site_id] = res.data[date]?.[site.site_id] ?? null;
+            const entry = res.data[date]?.[site.site_id];
+            row[site.site_id] = entry?.credits ?? null;
+            uptime[date][site.site_id] = entry?.uptime ?? null;
           }
           return row;
         });
+        this.uptimeData = uptime;
         this.loading = false;
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load report data' });
-        this.loading = false;
-      }
-    });
+    };
+
+    if (metadata$) {
+      forkJoin({ report: report$, metadata: metadata$ }).subscribe({
+        next: ({ report, metadata }) => {
+          metadata.forEach(s => this.siteMetadata.set(s.site_id, s));
+          this.metadataLoaded = true;
+          handleResponse(report);
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load report data' });
+          this.loading = false;
+        }
+      });
+    } else {
+      report$.subscribe({
+        next: handleResponse,
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load report data' });
+          this.loading = false;
+        }
+      });
+    }
   }
 
   rowTotal(row: ReportRow): number | null {
@@ -245,6 +285,47 @@ export class DailyDestructionReportComponent implements OnInit {
       result[site.site_id] = values.length ? values.reduce((a, b) => a + b, 0) : null;
     }
     return result;
+  }
+
+  get uptimeTotals(): { [siteId: string]: number | null } {
+    const result: { [siteId: string]: number | null } = {};
+    for (const site of this.sites) {
+      const values = Object.values(this.uptimeData)
+        .map(d => d[site.site_id])
+        .filter((v): v is number => v != null);
+      result[site.site_id] = values.length ? values.reduce((a, b) => a + b, 0) : null;
+    }
+    return result;
+  }
+
+  get grandUptimeTotal(): number | null {
+    const values = this.sites
+      .map(s => this.uptimeTotals[s.site_id])
+      .filter((v): v is number => v != null);
+    return values.length ? values.reduce((a, b) => a + b, 0) : null;
+  }
+
+  get uptimePercentages(): { [siteId: string]: number | null } {
+    const totalPossibleSeconds = this.rows.length * 86400;
+    if (!totalPossibleSeconds) return {};
+    const result: { [siteId: string]: number | null } = {};
+    for (const site of this.sites) {
+      const uptime = this.uptimeTotals[site.site_id];
+      result[site.site_id] = uptime != null ? (uptime / totalPossibleSeconds) * 100 : null;
+    }
+    return result;
+  }
+
+  get grandUptimePercentage(): number | null {
+    const totalPossibleSeconds = this.rows.length * 86400 * this.sites.length;
+    if (!totalPossibleSeconds) return null;
+    const grand = this.grandUptimeTotal;
+    return grand != null ? (grand / totalPossibleSeconds) * 100 : null;
+  }
+
+  formatUptime(seconds: number | null): string {
+    if (seconds == null) return '—';
+    return `${Math.round(seconds / 60).toLocaleString()} min`;
   }
 
   private formatDate(d: Date): string {
