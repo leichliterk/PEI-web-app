@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       next: (t) => {
         this.tenant = t;
         this.sites = t.sites
-          .filter((s: TenantSite) => allowedSiteIds.has(s.site_id))
+          .filter((s: TenantSite) => !s.archived && allowedSiteIds.has(s.site_id))
           .map((s: TenantSite) => ({
             site_id: s.site_id,
             name: s.name,

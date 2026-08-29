@@ -10,6 +10,7 @@ export interface TenantSite {
   connection_status?: boolean;
   last_seen?: string;
   app_version?: string;
+  archived?: boolean;
 }
 
 export interface Tenant {
